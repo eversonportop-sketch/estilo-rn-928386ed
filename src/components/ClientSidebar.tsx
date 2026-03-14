@@ -57,7 +57,7 @@ export default function ClientSidebar() {
         })}
       </nav>
 
-      <div className="p-3 md:p-4 border-t border-sidebar-border">
+      <div className="mt-auto p-3 md:p-4 border-t border-sidebar-border">
         <NavLink
           to="/"
           onClick={() => setIsOpen(false)}
