@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 
 const statusFilters = ["Todos", "Ativo", "Concluído"];
 
-const emptyForm = { name: "", email: "", phone: "", profession: "", objective: "", status: "ativo" };
+const emptyForm = { name: "", email: "", phone: "", profession: "", objective: "", status: "ativo", password: "" };
 
 export default function ClientsPage() {
   const [search, setSearch] = useState("");
@@ -44,6 +44,7 @@ export default function ClientsPage() {
       profession: client.profession || "",
       objective: client.objective || "",
       status: client.status || "ativo",
+      password: "",
     });
     setShowModal(true);
   };
@@ -53,14 +54,23 @@ export default function ClientsPage() {
       toast.error("Nome e email são obrigatórios.");
       return;
     }
+    if (!editingId && !form.password) {
+      toast.error("Senha é obrigatória para criar a cliente.");
+      return;
+    }
+    if (!editingId && form.password.length < 6) {
+      toast.error("A senha deve ter no mínimo 6 caracteres.");
+      return;
+    }
     if (editingId) {
-      updateClient.mutate({ id: editingId, ...form }, {
+      const { password, ...updates } = form;
+      updateClient.mutate({ id: editingId, ...updates }, {
         onSuccess: () => { toast.success("Cliente atualizada!"); setShowModal(false); },
         onError: (e) => toast.error("Erro: " + e.message),
       });
     } else {
       createClient.mutate(form, {
-        onSuccess: () => { toast.success("Cliente criada!"); setShowModal(false); },
+        onSuccess: () => { toast.success("Cliente criada com login!"); setShowModal(false); },
         onError: (e) => toast.error("Erro: " + e.message),
       });
     }
@@ -186,6 +196,12 @@ export default function ClientsPage() {
                 <Label>Objetivo</Label>
                 <Input value={form.objective} onChange={(e) => setForm({ ...form, objective: e.target.value })} placeholder="Objetivo da consultoria" />
               </div>
+              {!editingId && (
+                <div>
+                  <Label>Senha de acesso *</Label>
+                  <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Senha para login da cliente" />
+                </div>
+              )}
             </div>
             <div className="flex gap-3 mt-6 justify-end">
               <button onClick={() => setShowModal(false)} className="px-4 py-2 text-sm rounded-lg border border-border hover:bg-muted transition-colors">Cancelar</button>

@@ -1,9 +1,10 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { 
   LayoutDashboard, Users, FileText, User, Palette, 
   Image, Sparkles, Settings, LogOut, Menu, X, Camera, Scan, Shapes
 } from "lucide-react";
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import rnLogo from "@/assets/rn-logo.png";
 
 const menuItems = [
@@ -22,7 +23,13 @@ const menuItems = [
 
 export default function StrategistSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
 
   const SidebarContent = () => (
     <>
@@ -59,14 +66,13 @@ export default function StrategistSidebar() {
       </nav>
 
       <div className="mt-auto p-3 md:p-4 border-t border-sidebar-border">
-        <NavLink
-          to="/"
-          onClick={() => setIsOpen(false)}
-          className="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-3 rounded-lg text-xs md:text-sm text-sidebar-foreground hover:bg-sidebar-accent/50 transition-all duration-200"
+        <button
+          onClick={() => { setIsOpen(false); handleLogout(); }}
+          className="w-full flex items-center gap-2 md:gap-3 px-3 md:px-4 py-3 rounded-lg text-xs md:text-sm text-sidebar-foreground hover:bg-sidebar-accent/50 transition-all duration-200"
         >
           <LogOut className="w-4 h-4" />
           <span>Sair</span>
-        </NavLink>
+        </button>
       </div>
     </>
   );
