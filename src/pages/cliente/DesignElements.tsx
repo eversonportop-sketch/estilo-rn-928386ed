@@ -1,40 +1,32 @@
 import { motion } from "framer-motion";
-import { Shapes } from "lucide-react";
-
-const elements = [
-  {
-    category: "Linhas e Formas",
-    items: [
-      { label: "Linhas", value: "Retas e diagonais", note: "Transmitem autoridade e definição" },
-      { label: "Formas", value: "Geométricas e estruturadas", note: "Peças de alfaiataria e blazers" },
-    ],
-  },
-  {
-    category: "Tecidos e Texturas",
-    items: [
-      { label: "Fibras Têxteis", value: "Seda, lã fria, crepe", note: "Tecidos nobres com bom caimento" },
-      { label: "Texturas", value: "Lisas, sutilmente texturizadas", note: "Evite estampas chamativas" },
-    ],
-  },
-  {
-    category: "Acessórios",
-    items: [
-      { label: "Bolsas", value: "Estruturadas, clássicas", note: "Couro em preto ou marinho" },
-      { label: "Sapatos", value: "Scarpins, mules e botas finas", note: "Salto médio a alto" },
-      { label: "Joias", value: "Minimalistas em prata", note: "Menos é mais" },
-      { label: "Carteiras", value: "Slim, couro de qualidade", note: "Tom neutro ou metálico" },
-    ],
-  },
-  {
-    category: "Visual",
-    items: [
-      { label: "Contraste", value: "Alto contraste é seu diferencial", note: "Preto com branco ou off-white" },
-      { label: "Proporção Visual", value: "Equilibrada, verticalidade", note: "Peças que alongam a silhueta" },
-    ],
-  },
-];
+import { Shapes, Loader2 } from "lucide-react";
+import { useClientDesignElements } from "@/hooks/useDesignElements";
+import { getActiveClientId } from "@/hooks/useActiveClient";
+import EmptyState from "@/components/EmptyState";
 
 export default function ClientDesignElements() {
+  const clientId = getActiveClientId();
+  const { data: elements, isLoading } = useClientDesignElements(clientId ?? undefined);
+
+  if (isLoading) {
+    return (
+      <div className="p-4 md:p-8 max-w-4xl flex items-center justify-center py-20">
+        <Loader2 className="w-5 h-5 animate-spin text-gold" />
+        <span className="ml-2 text-sm text-muted-foreground">Carregando elementos...</span>
+      </div>
+    );
+  }
+
+  // Group elements by categoria
+  const grouped = (elements || []).reduce<Record<string, typeof elements>>((acc, el) => {
+    const cat = el.categoria || "Outros";
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat]!.push(el);
+    return acc;
+  }, {});
+
+  const categories = Object.keys(grouped);
+
   return (
     <div className="p-4 md:p-8 max-w-4xl">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
@@ -47,27 +39,36 @@ export default function ClientDesignElements() {
         </p>
       </motion.div>
 
-      <div className="space-y-6">
-        {elements.map((group, groupIdx) => (
-          <motion.div
-            key={group.category}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: groupIdx * 0.08 }}
-          >
-            <h2 className="font-display text-base md:text-lg gold-text mb-3">{group.category}</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {group.items.map((item) => (
-                <div key={item.label} className="card-luxury p-4 md:p-5">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">{item.label}</p>
-                  <p className="font-display text-sm md:text-base mb-1">{item.value}</p>
-                  <p className="text-xs text-muted-foreground italic">{item.note}</p>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        ))}
-      </div>
+      {categories.length === 0 ? (
+        <EmptyState
+          title="Nenhum elemento de design registrado"
+          subtitle="Sua estrategista ainda não registrou seus elementos de design."
+          icon={<Shapes className="w-7 h-7 text-muted-foreground/40" />}
+        />
+      ) : (
+        <div className="space-y-6">
+          {categories.map((category, groupIdx) => (
+            <motion.div
+              key={category}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: groupIdx * 0.08 }}
+            >
+              <h2 className="font-display text-base md:text-lg gold-text mb-3">{category}</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {grouped[category]!.map((item) => (
+                  <div key={item.id} className="card-luxury p-4 md:p-5">
+                    <p className="font-display text-sm md:text-base mb-1">{item.descricao}</p>
+                    {item.observacao && (
+                      <p className="text-xs text-muted-foreground italic">{item.observacao}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

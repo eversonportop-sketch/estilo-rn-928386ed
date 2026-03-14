@@ -19,7 +19,7 @@ export default function Morphology() {
 
       if (!clientId) return;
 
-      const { data } = await supabase.from("client_morphology").select("*").eq("client_id", clientId).single();
+      const { data } = await supabase.from("client_morphology").select("*").eq("client_id", clientId).maybeSingle();
 
       if (data) {
         setMorphology(data);

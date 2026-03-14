@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { getActiveClientId } from '@/hooks/useActiveClient';
 
 export interface JourneyStep {
   key: string;
@@ -7,67 +8,52 @@ export interface JourneyStep {
 }
 
 /**
- * Fetches the first client from the database (demo mode)
- * and checks real Supabase data for each consulting journey step.
+ * Checks real Supabase data for each consulting journey step
+ * using the active client from sessionStorage.
  */
 export function useClientJourney() {
-  return useQuery({
-    queryKey: ['client_journey_progress'],
-    queryFn: async () => {
-      // Get the first client as demo client
-      const { data: clients, error: clientErr } = await supabase
-        .from('clients')
-        .select('id')
-        .limit(1)
-        .order('created_at', { ascending: true });
+  const clientId = getActiveClientId();
 
-      if (clientErr) throw clientErr;
-      const clientId = clients?.[0]?.id;
+  return useQuery({
+    queryKey: ['client_journey_progress', clientId],
+    enabled: !!clientId,
+    queryFn: async () => {
       if (!clientId) return { clientId: null, steps: getDefaultSteps() };
 
       // Check all journey steps in parallel
       const [anamnese, analysis, morphology, styleIdentity, coloring, designElements, looks] =
         await Promise.all([
-          // Anamnese: check if client has status/progress indicating completion
-          // Since anamnese is local-only for now, mark as pending unless client progress > 0
           supabase
             .from('clients')
             .select('progress')
             .eq('id', clientId)
-            .single(),
-          // Strategic Analysis
+            .maybeSingle(),
           supabase
             .from('client_strategic_analysis')
             .select('id')
             .eq('client_id', clientId)
             .maybeSingle(),
-          // Morphology
           supabase
             .from('client_morphology')
             .select('id')
             .eq('client_id', clientId)
             .maybeSingle(),
-          // Style Identity — no dedicated table, check if client has style-related analysis
-          // Using strategic analysis as proxy (objetivo_imagem filled = style defined)
           supabase
             .from('client_strategic_analysis')
             .select('objetivo_imagem')
             .eq('client_id', clientId)
             .maybeSingle(),
-          // Personal Coloring — no dedicated table, check design elements with color category
           supabase
             .from('client_design_elements')
             .select('id')
             .eq('client_id', clientId)
             .eq('categoria', 'Coloração')
             .limit(1),
-          // Design Elements
           supabase
             .from('client_design_elements')
             .select('id')
             .eq('client_id', clientId)
             .limit(1),
-          // Looks
           supabase
             .from('looks')
             .select('id')

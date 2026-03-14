@@ -19,7 +19,7 @@ export default function PersonalColoring() {
 
       if (!clientId) return;
 
-      const { data } = await supabase.from("client_color_palettes").select("*").eq("client_id", clientId).single();
+      const { data } = await supabase.from("client_color_palettes").select("*").eq("client_id", clientId).maybeSingle();
 
       if (data) {
         setPalette(data);
