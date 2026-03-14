@@ -63,7 +63,13 @@ export function useCreateClient() {
       const { data, error } = await supabase.functions.invoke('create-client', {
         body: { ...clientData, password },
       });
-      if (error) throw new Error(error.message || 'Erro ao criar cliente');
+      if (error) {
+        // Try to parse error context from the response
+        const msg = (error as any)?.context?.body
+          ? await (error as any).context.json().then((b: any) => b.error).catch(() => error.message)
+          : error.message;
+        throw new Error(msg || 'Erro ao criar cliente');
+      }
       if (data?.error) throw new Error(data.error);
       return data as Client;
     },
