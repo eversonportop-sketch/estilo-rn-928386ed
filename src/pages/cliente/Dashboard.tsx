@@ -1,21 +1,9 @@
 import { motion } from "framer-motion";
-import { Palette, Star, Target, Eye, Sparkles, CheckCircle2, Circle, ClipboardList, FileText, User, Scan, Shapes, Image, Loader2 } from "lucide-react";
+import { Palette, Star, Target, Eye, Sparkles } from "lucide-react";
 import EmptyState from "@/components/EmptyState";
-import { Link } from "react-router-dom";
-import { useClientJourney } from "@/hooks/useClientJourney";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getActiveClientId } from "@/hooks/useActiveClient";
-
-const journeySteps = [
-  { label: "Anamnese", icon: ClipboardList, url: "/cliente/anamnese" },
-  { label: "Análise Estratégica", icon: FileText, url: "/cliente/analise" },
-  { label: "Morfologia", icon: Scan, url: "/cliente/morfologia" },
-  { label: "Identidade de Estilo", icon: User, url: "/cliente/identidade-estilo" },
-  { label: "Coloração", icon: Palette, url: "/cliente/coloracao" },
-  { label: "Elementos de Design", icon: Shapes, url: "/cliente/elementos" },
-  { label: "Composição de Looks", icon: Image, url: "/cliente/looks" },
-];
 
 function useDashboardData() {
   const clientId = getActiveClientId();
