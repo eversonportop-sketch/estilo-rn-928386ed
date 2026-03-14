@@ -1,29 +1,50 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
-import { CheckCircle, ClipboardList } from "lucide-react";
+import { useState, useEffect } from "react";
+import { CheckCircle, ClipboardList, Loader2 } from "lucide-react";
+import { getActiveClientId } from "@/hooks/useActiveClient";
+import { useClientAnamnesis, useUpsertAnamnesis } from "@/hooks/useAnamnesis";
+import { toast } from "sonner";
 
 const questions = [
-  { id: "1", label: "Qual é a sua profissão?", type: "texto_curto", placeholder: "Ex: Advogada, Médica, Empresária..." },
-  { id: "2", label: "Como você deseja ser percebida profissionalmente?", type: "texto_longo", placeholder: "Descreva como você quer que as pessoas te vejam no ambiente profissional..." },
+  { id: "profession", label: "Qual é a sua profissão?", type: "texto_curto", placeholder: "Ex: Advogada, Médica, Empresária..." },
+  { id: "objectives", label: "Como você deseja ser percebida profissionalmente?", type: "texto_longo", placeholder: "Descreva como você quer que as pessoas te vejam no ambiente profissional..." },
   {
-    id: "3",
+    id: "lifestyle",
     label: "Quais roupas você mais usa no dia a dia?",
     type: "multipla_escolha",
     options: ["Jeans e camiseta", "Vestidos", "Ternos/Alfaiataria", "Roupas esportivas", "Misto de estilos"],
   },
-  { id: "4", label: "Qual é o seu objetivo com a consultoria?", type: "texto_longo", placeholder: "O que espera alcançar com a consultoria de imagem?" },
+  { id: "routine", label: "Qual é o seu objetivo com a consultoria?", type: "texto_longo", placeholder: "O que espera alcançar com a consultoria de imagem?" },
   {
-    id: "5",
+    id: "preferences",
     label: "Como você se sente em relação ao seu guarda-roupa atual?",
     type: "escala",
     options: ["1 - Muito insatisfeita", "2", "3 - Neutro", "4", "5 - Muito satisfeita"],
   },
-  { id: "6", label: "Existem eventos ou situações específicas para as quais você precisa de looks?", type: "texto_longo", placeholder: "Ex: Apresentações, casamentos, viagens corporativas..." },
+  { id: "challenges", label: "Existem eventos ou situações específicas para as quais você precisa de looks?", type: "texto_longo", placeholder: "Ex: Apresentações, casamentos, viagens corporativas..." },
 ];
 
 export default function ClientAnamnese() {
+  const clientId = getActiveClientId();
+  const { data: existing, isLoading } = useClientAnamnesis(clientId ?? undefined);
+  const upsert = useUpsertAnamnesis();
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    if (existing) {
+      const loaded: Record<string, string | string[]> = {};
+      if (existing.profession) loaded.profession = existing.profession;
+      if (existing.objectives) loaded.objectives = existing.objectives;
+      if (existing.lifestyle) {
+        try { loaded.lifestyle = JSON.parse(existing.lifestyle); } catch { loaded.lifestyle = existing.lifestyle; }
+      }
+      if (existing.routine) loaded.routine = existing.routine;
+      if (existing.preferences) loaded.preferences = existing.preferences;
+      if (existing.challenges) loaded.challenges = existing.challenges;
+      setAnswers(loaded);
+    }
+  }, [existing]);
 
   const handleText = (id: string, value: string) => setAnswers(prev => ({ ...prev, [id]: value }));
   const handleMultiple = (id: string, option: string) => {
@@ -32,7 +53,36 @@ export default function ClientAnamnese() {
     setAnswers(prev => ({ ...prev, [id]: updated }));
   };
 
-  const handleSubmit = () => setSubmitted(true);
+  const handleSubmit = () => {
+    if (!clientId) {
+      toast.error("Cliente não identificado.");
+      return;
+    }
+    upsert.mutate({
+      client_id: clientId,
+      profession: (answers.profession as string) || "",
+      objectives: (answers.objectives as string) || "",
+      lifestyle: Array.isArray(answers.lifestyle) ? JSON.stringify(answers.lifestyle) : (answers.lifestyle as string) || "",
+      routine: (answers.routine as string) || "",
+      preferences: (answers.preferences as string) || "",
+      challenges: (answers.challenges as string) || "",
+    }, {
+      onSuccess: () => {
+        setSubmitted(true);
+        toast.success("Anamnese salva com sucesso!");
+      },
+      onError: (e) => toast.error("Erro ao salvar: " + e.message),
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="p-4 md:p-8 max-w-3xl flex items-center justify-center py-20">
+        <Loader2 className="w-5 h-5 animate-spin text-gold" />
+        <span className="ml-2 text-sm text-muted-foreground">Carregando anamnese...</span>
+      </div>
+    );
+  }
 
   if (submitted) {
     return (
@@ -136,8 +186,10 @@ export default function ClientAnamnese() {
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="mt-8">
         <button
           onClick={handleSubmit}
-          className="w-full sm:w-auto px-8 py-4 rounded-xl gold-gradient text-primary-foreground font-medium hover:opacity-90 transition-opacity"
+          disabled={upsert.isPending}
+          className="w-full sm:w-auto px-8 py-4 rounded-xl gold-gradient text-primary-foreground font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-2"
         >
+          {upsert.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
           Enviar Respostas
         </button>
       </motion.div>
