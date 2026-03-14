@@ -23,7 +23,13 @@ const menuItems = [
 
 export default function StrategistSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
 
   const SidebarContent = () => (
     <>

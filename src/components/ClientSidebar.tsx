@@ -22,7 +22,14 @@ const menuItems = [
 
 export default function ClientSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    sessionStorage.removeItem("client_id");
+    navigate("/");
+  };
 
   const SidebarContent = () => (
     <>
