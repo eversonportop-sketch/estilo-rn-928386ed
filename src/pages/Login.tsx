@@ -1,9 +1,66 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { setActiveClientId } from "@/hooks/useActiveClient";
+import { toast } from "sonner";
 import rnLogo from "@/assets/rn-logo.png";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      toast.error("Preencha email e senha.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+
+      const userId = data.user.id;
+
+      // Check if user is a strategist (has role)
+      const { data: role } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .eq('role', 'strategist')
+        .maybeSingle();
+
+      if (role) {
+        navigate("/estrategista");
+        return;
+      }
+
+      // Check if user is a client
+      const { data: client } = await supabase
+        .from('clients')
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (client) {
+        setActiveClientId(client.id);
+        navigate("/cliente");
+        return;
+      }
+
+      // Fallback - no role found
+      toast.error("Usuário sem permissão. Contate sua estrategista.");
+      await supabase.auth.signOut();
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao fazer login.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-foreground relative overflow-hidden px-4">
@@ -33,7 +90,10 @@ export default function LoginPage() {
               <label className="text-xs text-primary-foreground/60 block mb-1.5">Email</label>
               <input 
                 type="email" 
-                placeholder="seu@email.com" 
+                placeholder="seu@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
                 className="w-full px-4 py-3 rounded-lg bg-primary-foreground/5 border border-primary-foreground/10 text-primary-foreground text-sm placeholder:text-primary-foreground/30 focus:outline-none focus:ring-1 focus:ring-gold/40" 
               />
             </div>
@@ -41,28 +101,23 @@ export default function LoginPage() {
               <label className="text-xs text-primary-foreground/60 block mb-1.5">Senha</label>
               <input 
                 type="password" 
-                placeholder="••••••••" 
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
                 className="w-full px-4 py-3 rounded-lg bg-primary-foreground/5 border border-primary-foreground/10 text-primary-foreground text-sm placeholder:text-primary-foreground/30 focus:outline-none focus:ring-1 focus:ring-gold/40" 
               />
             </div>
           </div>
 
-          <p className="text-xs text-primary-foreground/40 text-center mb-4">Selecione seu portal para demonstração:</p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <button
-              onClick={() => navigate("/estrategista")}
-              className="px-4 py-3 rounded-xl gold-gradient text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
-            >
-              Área da Estrategista
-            </button>
-            <button
-              onClick={() => navigate("/cliente")}
-              className="px-4 py-3 rounded-xl border border-gold/30 text-gold text-sm font-medium hover:bg-gold/5 transition-colors"
-            >
-              Área da Cliente
-            </button>
-          </div>
+          <button
+            onClick={handleLogin}
+            disabled={loading}
+            className="w-full px-4 py-3 rounded-xl gold-gradient text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+            Entrar
+          </button>
         </div>
 
         <p className="text-center text-[10px] text-primary-foreground/30 mt-6 md:mt-8 tracking-wider">
