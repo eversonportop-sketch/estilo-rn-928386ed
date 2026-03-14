@@ -60,24 +60,11 @@ export function useCreateClient() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ password, ...clientData }: CreateClientInput) => {
-      let userId: string | undefined;
-
-      // If password provided, create auth user first
-      if (password) {
-        const { data: authData, error: authError } = await supabaseAdmin.auth.signUp({
-          email: clientData.email,
-          password,
-        });
-        if (authError) throw new Error(`Erro ao criar login: ${authError.message}`);
-        userId = authData.user?.id;
-      }
-
-      // Insert client record
-      const insertData: any = { ...clientData };
-      if (userId) insertData.user_id = userId;
-
-      const { data, error } = await supabase.from('clients').insert(insertData).select().single();
-      if (error) throw error;
+      const { data, error } = await supabase.functions.invoke('create-client', {
+        body: { ...clientData, password },
+      });
+      if (error) throw new Error(error.message || 'Erro ao criar cliente');
+      if (data?.error) throw new Error(data.error);
       return data as Client;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['clients'] }),
