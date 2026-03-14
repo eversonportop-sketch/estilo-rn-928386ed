@@ -1,21 +1,9 @@
 import { motion } from "framer-motion";
-import { Palette, Star, Target, Eye, Sparkles, CheckCircle2, Circle, ClipboardList, FileText, User, Scan, Shapes, Image, Loader2 } from "lucide-react";
+import { Palette, Star, Target, Eye, Sparkles } from "lucide-react";
 import EmptyState from "@/components/EmptyState";
-import { Link } from "react-router-dom";
-import { useClientJourney } from "@/hooks/useClientJourney";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getActiveClientId } from "@/hooks/useActiveClient";
-
-const journeySteps = [
-  { label: "Anamnese", icon: ClipboardList, url: "/cliente/anamnese" },
-  { label: "Análise Estratégica", icon: FileText, url: "/cliente/analise" },
-  { label: "Morfologia", icon: Scan, url: "/cliente/morfologia" },
-  { label: "Identidade de Estilo", icon: User, url: "/cliente/identidade-estilo" },
-  { label: "Coloração", icon: Palette, url: "/cliente/coloracao" },
-  { label: "Elementos de Design", icon: Shapes, url: "/cliente/elementos" },
-  { label: "Composição de Looks", icon: Image, url: "/cliente/looks" },
-];
 
 function useDashboardData() {
   const clientId = getActiveClientId();
@@ -92,12 +80,7 @@ function useDashboardData() {
 }
 
 export default function ClientDashboard() {
-  const { data: journey, isLoading: journeyLoading } = useClientJourney();
   const { clientName, predominantStyle, secondaryStyle, palette, objective, looksRecomendados } = useDashboardData();
-
-  const journeyStepKeys = ["anamnese", "analise", "morfologia", "identidade", "coloracao", "elementos", "looks"];
-  const getStepCompleted = (key: string) => journey?.steps?.find(s => s.key === key)?.completed ?? false;
-  const completedCount = journeyStepKeys.filter(getStepCompleted).length;
 
   const cards = [
     { label: "Estilo Predominante", value: predominantStyle || "Ainda não definido", icon: Star },
@@ -125,57 +108,7 @@ export default function ClientDashboard() {
         ))}
       </div>
 
-      {/* Jornada da Consultoria */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-        <h2 className="text-2xl font-display font-light mb-6">Jornada da Consultoria</h2>
-        <div className="card-luxury p-6 mb-12">
-          {journeyLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-5 h-5 animate-spin text-gold" />
-              <span className="ml-2 text-sm text-muted-foreground">Carregando progresso...</span>
-            </div>
-          ) : (
-            <>
-              <div className="space-y-1">
-                {journeySteps.map((step, i) => {
-                  const completed = getStepCompleted(journeyStepKeys[i]);
-                  return (
-                    <Link
-                      key={step.label}
-                      to={step.url}
-                      className="flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-muted/50 transition-colors group"
-                    >
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full flex-shrink-0">
-                        {completed ? (
-                          <CheckCircle2 className="w-5 h-5 text-gold" />
-                        ) : (
-                          <Circle className="w-5 h-5 text-muted-foreground/30" />
-                        )}
-                      </div>
-                      <step.icon className={`w-4 h-4 flex-shrink-0 ${completed ? "text-gold" : "text-muted-foreground/50"}`} />
-                      <span className={`text-sm font-body ${completed ? "text-foreground" : "text-muted-foreground"}`}>
-                        {step.label}
-                      </span>
-                      {completed && (
-                        <span className="ml-auto text-[10px] uppercase tracking-wider text-gold font-medium">Concluída</span>
-                      )}
-                    </Link>
-                  );
-                })}
-              </div>
-              <div className="mt-4 pt-4 border-t border-border">
-                <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
-                  <span>Progresso geral</span>
-                  <span className="text-gold font-medium">{completedCount} de 7 etapas</span>
-                </div>
-                <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-gold rounded-full transition-all duration-500" style={{ width: `${(completedCount / 7) * 100}%` }} />
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      </motion.div>
+
 
       <h2 className="text-2xl font-display font-light mb-6">Looks Recomendados para Você</h2>
 

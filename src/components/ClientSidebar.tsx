@@ -57,7 +57,7 @@ export default function ClientSidebar() {
         })}
       </nav>
 
-      <div className="p-3 md:p-4 border-t border-sidebar-border">
+      <div className="mt-auto p-3 md:p-4 border-t border-sidebar-border">
         <NavLink
           to="/"
           onClick={() => setIsOpen(false)}
@@ -101,7 +101,7 @@ export default function ClientSidebar() {
       </aside>
 
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex w-64 min-h-screen bg-sidebar flex-col border-r border-sidebar-border">
+      <aside className="hidden md:flex w-64 h-screen sticky top-0 bg-sidebar flex-col border-r border-sidebar-border">
         <SidebarContent />
       </aside>
 
