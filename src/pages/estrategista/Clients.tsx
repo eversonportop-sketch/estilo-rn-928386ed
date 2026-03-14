@@ -187,6 +187,12 @@ export default function ClientsPage() {
                 <Label>Objetivo</Label>
                 <Input value={form.objective} onChange={(e) => setForm({ ...form, objective: e.target.value })} placeholder="Objetivo da consultoria" />
               </div>
+              {!editingId && (
+                <div>
+                  <Label>Senha de acesso *</Label>
+                  <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Senha para login da cliente" />
+                </div>
+              )}
             </div>
             <div className="flex gap-3 mt-6 justify-end">
               <button onClick={() => setShowModal(false)} className="px-4 py-2 text-sm rounded-lg border border-border hover:bg-muted transition-colors">Cancelar</button>
