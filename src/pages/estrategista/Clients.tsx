@@ -44,6 +44,7 @@ export default function ClientsPage() {
       profession: client.profession || "",
       objective: client.objective || "",
       status: client.status || "ativo",
+      password: "",
     });
     setShowModal(true);
   };
