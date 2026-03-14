@@ -54,14 +54,23 @@ export default function ClientsPage() {
       toast.error("Nome e email são obrigatórios.");
       return;
     }
+    if (!editingId && !form.password) {
+      toast.error("Senha é obrigatória para criar a cliente.");
+      return;
+    }
+    if (!editingId && form.password.length < 6) {
+      toast.error("A senha deve ter no mínimo 6 caracteres.");
+      return;
+    }
     if (editingId) {
-      updateClient.mutate({ id: editingId, ...form }, {
+      const { password, ...updates } = form;
+      updateClient.mutate({ id: editingId, ...updates }, {
         onSuccess: () => { toast.success("Cliente atualizada!"); setShowModal(false); },
         onError: (e) => toast.error("Erro: " + e.message),
       });
     } else {
       createClient.mutate(form, {
-        onSuccess: () => { toast.success("Cliente criada!"); setShowModal(false); },
+        onSuccess: () => { toast.success("Cliente criada com login!"); setShowModal(false); },
         onError: (e) => toast.error("Erro: " + e.message),
       });
     }
