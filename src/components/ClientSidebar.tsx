@@ -101,7 +101,7 @@ export default function ClientSidebar() {
       </aside>
 
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex w-64 min-h-screen bg-sidebar flex-col border-r border-sidebar-border">
+      <aside className="hidden md:flex w-64 h-screen sticky top-0 bg-sidebar flex-col border-r border-sidebar-border">
         <SidebarContent />
       </aside>
 
