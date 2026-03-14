@@ -75,8 +75,9 @@ export default function StrategistSidebar() {
     <>
       {/* Mobile Header */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-sidebar border-b border-sidebar-border flex items-center justify-between px-4 py-3">
-        <div className="flex items-center">
+        <div className="flex items-center gap-3">
           <img src={rnLogo} alt="RN" className="w-8 h-8 object-contain" />
+          <span className="text-xs font-display tracking-[0.2em] text-sidebar-primary uppercase">Consulting</span>
         </div>
         <button
           onClick={() => setIsOpen(!isOpen)}
