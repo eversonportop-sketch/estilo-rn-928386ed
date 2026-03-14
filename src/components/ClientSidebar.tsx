@@ -66,14 +66,13 @@ export default function ClientSidebar() {
       </nav>
 
       <div className="mt-auto p-3 md:p-4 border-t border-sidebar-border">
-        <NavLink
-          to="/"
-          onClick={() => setIsOpen(false)}
-          className="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-3 rounded-lg text-xs md:text-sm text-sidebar-foreground hover:bg-sidebar-accent/50 transition-all duration-200"
+        <button
+          onClick={() => { setIsOpen(false); handleLogout(); }}
+          className="w-full flex items-center gap-2 md:gap-3 px-3 md:px-4 py-3 rounded-lg text-xs md:text-sm text-sidebar-foreground hover:bg-sidebar-accent/50 transition-all duration-200"
         >
           <LogOut className="w-4 h-4" />
           <span>Sair</span>
-        </NavLink>
+        </button>
       </div>
     </>
   );
