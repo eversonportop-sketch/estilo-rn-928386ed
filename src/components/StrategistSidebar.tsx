@@ -1,9 +1,10 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { 
   LayoutDashboard, Users, FileText, User, Palette, 
   Image, Sparkles, Settings, LogOut, Menu, X, Camera, Scan, Shapes
 } from "lucide-react";
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import rnLogo from "@/assets/rn-logo.png";
 
 const menuItems = [
