@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
-import { Send, Sparkles } from "lucide-react";
-import { useState } from "react";
-import { useWardrobeContext } from "@/contexts/WardrobeContext";
+import { Send, Sparkles, Loader2 } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { getActiveClientId } from "@/hooks/useActiveClient";
+import { useAssistantMessages, useAddAssistantMessage } from "@/hooks/useAssistantMessages";
 
 const suggestedPrompts = [
   "Que look usar para uma reunião profissional?",
@@ -12,61 +13,92 @@ const suggestedPrompts = [
 
 interface Message { role: "assistant" | "user"; content: string; suggestions?: string[] }
 
-function generateResponse(input: string, context: { pecasNames: string[]; looksNames: string[] }): Message {
+function generateResponse(input: string): Message {
   const lower = input.toLowerCase();
-  const { pecasNames, looksNames } = context;
 
   if (lower.includes("reunião") || lower.includes("profissional")) {
     return {
       role: "assistant",
-      content: "Para uma reunião profissional, recomendo um look que transmita autoridade e elegância.\n\nBaseado no seu perfil **Clássico Elegante** e paleta **Inverno Profundo**, sugiro:",
+      content: "Para uma reunião profissional, recomendo um look que transmita autoridade e elegância.\n\nBaseado no seu perfil, sugiro:",
       suggestions: ["Blazer de alfaiataria em tom escuro", "Camisa de seda off-white", "Calça reta de cintura alta", "Scarpin nude para alongamento visual"],
     };
   }
   if (lower.includes("calça preta") || lower.includes("combinar")) {
     return {
       role: "assistant",
-      content: "A calça preta é uma peça coringa! Para seu perfil, ótimas combinações incluem:",
-      suggestions: ["Com camisa de seda para o trabalho", "Com blazer para reuniões", "Com blusa estruturada para eventos", "Com peças em tons de marinho ou bordô da sua paleta"],
+      content: "A calça preta é uma peça coringa! Ótimas combinações incluem:",
+      suggestions: ["Com camisa de seda para o trabalho", "Com blazer para reuniões", "Com blusa estruturada para eventos", "Com peças em tons de marinho ou bordô"],
     };
   }
   if (lower.includes("evento")) {
     return {
       role: "assistant",
-      content: "Para eventos, sua paleta Inverno Profundo brilha em tons impactantes:",
+      content: "Para eventos, tons impactantes são ideais:",
       suggestions: ["Vestido midi em bordô", "Acessórios em dourado", "Scarpin ou sandália de salto", "Bolsa estruturada como complemento"],
     };
   }
   if (lower.includes("cor") || lower.includes("paleta")) {
     return {
       role: "assistant",
-      content: "Sua paleta **Inverno Profundo** favorece tons intensos e contrastantes:\n\n**Cores ideais:** Preto, marinho, bordô, off-white, cinza escuro\n**Metais:** Prata e ouro branco\n**Evitar:** Tons pastéis e amarelados",
+      content: "Sua paleta favorece tons intensos e contrastantes:\n\n**Cores ideais:** Preto, marinho, bordô, off-white, cinza escuro\n**Metais:** Prata e ouro branco\n**Evitar:** Tons pastéis e amarelados",
     };
   }
 
   return {
     role: "assistant",
-    content: `Baseado no seu perfil Clássico Elegante e na paleta Inverno Profundo, posso ajudar! Você tem **${pecasNames.length} peças** no guarda-roupa e **${looksNames.length} looks** montados.\n\nTente perguntar sobre combinações específicas, como looks para reunião, evento ou trabalho. ✨`,
+    content: "Posso ajudar com combinações de looks, sugestões de cores e recomendações personalizadas.\n\nTente perguntar sobre looks para reunião, evento ou trabalho. ✨",
   };
 }
 
 export default function ClientAssistant() {
-  const { pecas, looks } = useWardrobeContext();
-  const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: "Olá! Sou sua **Assistente de Looks**.\n\nPosso ajudar com combinações de looks, sugestões de cores e recomendações personalizadas com base no seu perfil.\n\nO que gostaria de saber?" },
-  ]);
+  const clientId = getActiveClientId();
+  const { data: savedMessages, isLoading } = useAssistantMessages(clientId ?? undefined);
+  const addMessage = useAddAssistantMessage();
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [initialized, setInitialized] = useState(false);
+
+  useEffect(() => {
+    if (initialized) return;
+    if (isLoading) return;
+
+    if (savedMessages && savedMessages.length > 0) {
+      setMessages(savedMessages.map(m => ({ role: m.role, content: m.content })));
+    } else {
+      setMessages([
+        { role: "assistant", content: "Olá! Sou sua **Assistente de Looks**.\n\nPosso ajudar com combinações de looks, sugestões de cores e recomendações personalizadas com base no seu perfil.\n\nO que gostaria de saber?" },
+      ]);
+    }
+    setInitialized(true);
+  }, [isLoading, savedMessages, initialized]);
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages]);
 
   const sendMessage = (text: string) => {
     if (!text.trim()) return;
     const userMsg: Message = { role: "user", content: text };
-    const response = generateResponse(text, {
-      pecasNames: pecas.map((p) => p.nome),
-      looksNames: looks.map((l) => l.nome),
-    });
+    const response = generateResponse(text);
     setMessages((prev) => [...prev, userMsg, response]);
     setInput("");
+
+    // Save to Supabase if client is available
+    if (clientId) {
+      addMessage.mutate({ client_id: clientId, role: "user", content: text });
+      addMessage.mutate({ client_id: clientId, role: "assistant", content: response.content });
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen gap-2 text-muted-foreground">
+        <Loader2 className="w-5 h-5 animate-spin text-gold" />
+        <span className="text-sm">Carregando assistente...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-screen">
@@ -77,7 +109,7 @@ export default function ClientAssistant() {
         </motion.div>
       </div>
 
-      <div className="flex-1 overflow-auto px-8 py-4 space-y-4">
+      <div ref={scrollRef} className="flex-1 overflow-auto px-8 py-4 space-y-4">
         {messages.map((msg, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`max-w-2xl ${msg.role === "user" ? "ml-auto" : ""}`}>
             <div className={`p-4 rounded-xl text-sm leading-relaxed ${msg.role === "assistant" ? "card-luxury" : "gold-gradient text-primary-foreground"}`}>
