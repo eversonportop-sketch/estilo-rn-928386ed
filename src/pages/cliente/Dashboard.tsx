@@ -80,12 +80,7 @@ function useDashboardData() {
 }
 
 export default function ClientDashboard() {
-  const { data: journey, isLoading: journeyLoading } = useClientJourney();
   const { clientName, predominantStyle, secondaryStyle, palette, objective, looksRecomendados } = useDashboardData();
-
-  const journeyStepKeys = ["anamnese", "analise", "morfologia", "identidade", "coloracao", "elementos", "looks"];
-  const getStepCompleted = (key: string) => journey?.steps?.find(s => s.key === key)?.completed ?? false;
-  const completedCount = journeyStepKeys.filter(getStepCompleted).length;
 
   const cards = [
     { label: "Estilo Predominante", value: predominantStyle || "Ainda não definido", icon: Star },
