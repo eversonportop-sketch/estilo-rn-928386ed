@@ -1,9 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { supabaseAdmin } from '@/integrations/supabase/adminClient';
 
 export interface Client {
   id: string;
   consultant_id?: string;
+  user_id?: string;
   name: string;
   full_name?: string;
   email: string;
@@ -45,11 +47,37 @@ export function useClient(id: string | undefined) {
   });
 }
 
+interface CreateClientInput {
+  name: string;
+  email: string;
+  phone?: string;
+  profession?: string;
+  objective?: string;
+  status?: string;
+  password?: string;
+}
+
 export function useCreateClient() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (client: Omit<Client, 'id' | 'created_at'>) => {
-      const { data, error } = await supabase.from('clients').insert(client).select().single();
+    mutationFn: async ({ password, ...clientData }: CreateClientInput) => {
+      let userId: string | undefined;
+
+      // If password provided, create auth user first
+      if (password) {
+        const { data: authData, error: authError } = await supabaseAdmin.auth.signUp({
+          email: clientData.email,
+          password,
+        });
+        if (authError) throw new Error(`Erro ao criar login: ${authError.message}`);
+        userId = authData.user?.id;
+      }
+
+      // Insert client record
+      const insertData: any = { ...clientData };
+      if (userId) insertData.user_id = userId;
+
+      const { data, error } = await supabase.from('clients').insert(insertData).select().single();
       if (error) throw error;
       return data as Client;
     },
