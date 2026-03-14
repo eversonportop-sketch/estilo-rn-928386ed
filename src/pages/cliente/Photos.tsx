@@ -1,18 +1,65 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { Camera, Tag, Loader2 } from "lucide-react";
-import { useWardrobeItems } from "@/hooks/useWardrobeItems";
+import { Camera, Tag, Loader2, Upload } from "lucide-react";
+import { useWardrobeItems, useAddWardrobeItem } from "@/hooks/useWardrobeItems";
 import { getActiveClientId } from "@/hooks/useActiveClient";
+import { supabase } from "@/integrations/supabase/client";
 import EmptyState from "@/components/EmptyState";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export default function ClientPhotos() {
   const clientId = getActiveClientId();
   const { data: items, isLoading } = useWardrobeItems(clientId ?? undefined);
+  const addItem = useAddWardrobeItem();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
 
   const [filter, setFilter] = useState("todos");
 
   const categories = Array.from(new Set((items || []).map(i => i.categoria))).filter(Boolean);
   const filtered = filter === "todos" ? (items || []) : (items || []).filter(p => p.categoria === filter);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !clientId) return;
+
+    setUploading(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const fileName = `${clientId}/${Date.now()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('wardrobe')
+        .upload(fileName, file, { upsert: false });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from('wardrobe')
+        .getPublicUrl(fileName);
+
+      const nome = file.name.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ");
+
+      await addItem.mutateAsync({
+        client_id: clientId,
+        nome,
+        categoria: "Geral",
+        cor: "",
+        ocasiao: "",
+        foto: urlData.publicUrl,
+        criado_por: "cliente",
+      });
+
+      toast.success("Foto adicionada com sucesso!");
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Erro ao enviar foto. Tente novamente.");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   if (isLoading) {
     return (
@@ -33,6 +80,27 @@ export default function ClientPhotos() {
               <h1 className="text-2xl md:text-4xl font-display font-light">Minhas Fotos</h1>
             </div>
             <p className="text-muted-foreground text-xs md:text-sm">Suas peças e referências de estilo</p>
+          </div>
+          <div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleUpload}
+            />
+            <Button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading || !clientId}
+              className="gold-gradient text-primary-foreground gap-2"
+            >
+              {uploading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Upload className="w-4 h-4" />
+              )}
+              {uploading ? "Enviando..." : "Enviar Foto"}
+            </Button>
           </div>
         </div>
       </motion.div>
@@ -68,7 +136,7 @@ export default function ClientPhotos() {
       {filtered.length === 0 ? (
         <EmptyState
           title="Você ainda não adicionou peças ao seu guarda-roupa"
-          subtitle="Quando sua estrategista registrar peças, elas aparecerão aqui."
+          subtitle="Envie suas fotos clicando no botão acima."
           icon={<Camera className="w-7 h-7 text-muted-foreground/40" />}
         />
       ) : (
