@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Camera, Tag, Loader2 } from "lucide-react";
 import { useWardrobeItems } from "@/hooks/useWardrobeItems";
