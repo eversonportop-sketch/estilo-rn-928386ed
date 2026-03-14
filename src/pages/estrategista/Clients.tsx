@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 
 const statusFilters = ["Todos", "Ativo", "Concluído"];
 
-const emptyForm = { name: "", email: "", phone: "", profession: "", objective: "", status: "ativo" };
+const emptyForm = { name: "", email: "", phone: "", profession: "", objective: "", status: "ativo", password: "" };
 
 export default function ClientsPage() {
   const [search, setSearch] = useState("");
