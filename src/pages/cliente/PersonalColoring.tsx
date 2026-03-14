@@ -11,7 +11,7 @@ type ClientPalette = {
   description: string | null;
 };
 
-export default function ClientPersonalColoring() {
+export default function PersonalColoring() {
   const [palette, setPalette] = useState<ClientPalette | null>(null);
 
   useEffect(() => {
