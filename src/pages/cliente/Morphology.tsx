@@ -6,8 +6,8 @@ import { getActiveClientId } from "@/hooks/useActiveClient";
 
 type ClientMorphology = {
   id: string;
-  body_shape: string | null;
-  description: string | null;
+  body_type: string | null;
+  notes: string | null;
 };
 
 export default function Morphology() {
