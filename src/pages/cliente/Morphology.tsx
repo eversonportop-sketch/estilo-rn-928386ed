@@ -6,8 +6,8 @@ import { getActiveClientId } from "@/hooks/useActiveClient";
 
 type ClientMorphology = {
   id: string;
-  body_shape: string | null;
-  description: string | null;
+  body_type: string | null;
+  notes: string | null;
 };
 
 export default function Morphology() {
@@ -29,10 +29,10 @@ export default function Morphology() {
     loadMorphology();
   }, []);
 
-  const bodyShape = morphology?.body_shape ?? "Ainda não definida";
+  const bodyShape = morphology?.body_type ?? "Ainda não definida";
 
   const description =
-    morphology?.description ?? "Sua análise de morfologia corporal ainda não foi registrada pela estrategista.";
+    morphology?.notes ?? "Sua análise de morfologia corporal ainda não foi registrada pela estrategista.";
 
   return (
     <div className="p-4 md:p-8 max-w-4xl">

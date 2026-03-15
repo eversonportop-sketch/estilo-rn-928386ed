@@ -78,7 +78,7 @@ export default function ClientProfile() {
           <h2 className="font-display text-xl mb-4 flex items-center gap-2"><Ruler className="w-4 h-4 text-gold" /> Morfologia</h2>
           {morphology ? (
             <div className="space-y-2 text-sm">
-              <p><span className="text-muted-foreground">Silhueta:</span> {morphology.silhouette_name}</p>
+              <p><span className="text-muted-foreground">Tipo corporal:</span> {morphology.body_type}</p>
               {morphology.notes && <p><span className="text-muted-foreground">Notas:</span> {morphology.notes}</p>}
             </div>
           ) : (

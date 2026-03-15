@@ -4,8 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 export interface ClientMorphology {
   id: string;
   client_id: string;
-  silhouette_id: string;
-  silhouette_name: string;
+  body_type?: string;
+  shoulders?: string;
+  waist?: string;
+  hips?: string;
+  vertical_line?: string;
+  proportions?: string;
+  recommendations?: string;
   notes?: string;
   created_at?: string;
 }
