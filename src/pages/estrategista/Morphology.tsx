@@ -31,7 +31,7 @@ export default function Morphology() {
 
   useEffect(() => {
     if (morphology) {
-      setSelectedSilhouette(morphology.silhouette_id);
+      setSelectedSilhouette(morphology.body_type || "");
       setNotes(morphology.notes || "");
     } else {
       setSelectedSilhouette("");
@@ -45,8 +45,7 @@ export default function Morphology() {
     const sil = silhouettes.find(s => s.id === selectedSilhouette);
     upsertMorphology.mutate({
       client_id: selectedClient,
-      silhouette_id: selectedSilhouette,
-      silhouette_name: sil?.name || selectedSilhouette,
+      body_type: sil?.name || selectedSilhouette,
       notes,
     }, {
       onSuccess: () => toast.success("Morfologia salva com sucesso!"),

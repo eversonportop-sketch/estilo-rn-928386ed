@@ -29,10 +29,10 @@ export default function Morphology() {
     loadMorphology();
   }, []);
 
-  const bodyShape = morphology?.body_shape ?? "Ainda não definida";
+  const bodyShape = morphology?.body_type ?? "Ainda não definida";
 
   const description =
-    morphology?.description ?? "Sua análise de morfologia corporal ainda não foi registrada pela estrategista.";
+    morphology?.notes ?? "Sua análise de morfologia corporal ainda não foi registrada pela estrategista.";
 
   return (
     <div className="p-4 md:p-8 max-w-4xl">
