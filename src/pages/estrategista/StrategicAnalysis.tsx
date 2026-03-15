@@ -13,12 +13,16 @@ import { useClientStrategicAnalysis, useUpsertStrategicAnalysis } from "@/hooks/
 export default function StrategicAnalysis() {
   const [selectedClient, setSelectedClient] = useState("");
   const [analysis, setAnalysis] = useState({
-    objetivoImagem: "",
-    pontosFortesVisuais: "",
-    pontosAtencao: "",
-    estrategiaPosicionamento: "",
-    recomendacoesGerais: "",
-    observacoesAdicionais: ""
+    imageObjective: "",
+    strengths: "",
+    challenges: "",
+    positioning: "",
+    personalBrand: "",
+    lifestyle: "",
+    profession: "",
+    communicationObjective: "",
+    recommendations: "",
+    notes: ""
   });
 
   const { data: clients, isLoading: loadingClients } = useClients();
