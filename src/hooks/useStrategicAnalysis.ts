@@ -4,12 +4,16 @@ import { supabase } from '@/integrations/supabase/client';
 export interface ClientStrategicAnalysis {
   id: string;
   client_id: string;
-  objetivo_imagem?: string;
-  pontos_fortes_visuais?: string;
-  pontos_atencao?: string;
-  estrategia_posicionamento?: string;
-  recomendacoes_gerais?: string;
-  observacoes_adicionais?: string;
+  image_objective?: string;
+  strengths?: string;
+  challenges?: string;
+  positioning?: string;
+  personal_brand?: string;
+  lifestyle?: string;
+  profession?: string;
+  communication_objective?: string;
+  recommendations?: string;
+  notes?: string;
   created_at?: string;
 }
 

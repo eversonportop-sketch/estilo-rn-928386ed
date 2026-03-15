@@ -40,7 +40,7 @@ export function useClientJourney() {
             .maybeSingle(),
           supabase
             .from('client_strategic_analysis')
-            .select('objetivo_imagem')
+            .select('image_objective')
             .eq('client_id', clientId)
             .maybeSingle(),
           supabase
