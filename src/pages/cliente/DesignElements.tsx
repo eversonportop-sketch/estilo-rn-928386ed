@@ -17,15 +17,20 @@ export default function ClientDesignElements() {
     );
   }
 
-  // Group elements by categoria
-  const grouped = (elements || []).reduce<Record<string, typeof elements>>((acc, el) => {
-    const cat = el.categoria || "Outros";
-    if (!acc[cat]) acc[cat] = [];
-    acc[cat]!.push(el);
-    return acc;
-  }, {});
+  const fields = [
+    { key: "lines", label: "Linhas" },
+    { key: "shapes", label: "Formas" },
+    { key: "scale", label: "Escala" },
+    { key: "contrast", label: "Contraste" },
+    { key: "textures", label: "Texturas" },
+    { key: "fabrics", label: "Tecidos" },
+    { key: "prints", label: "Estampas" },
+    { key: "accessories", label: "Acessórios" },
+    { key: "recommendations", label: "Recomendações" },
+    { key: "notes", label: "Observações" },
+  ];
 
-  const categories = Object.keys(grouped);
+  const hasData = elements && Object.values(elements).some((v) => typeof v === "string" && v.trim() !== "");
 
   return (
     <div className="p-4 md:p-8 max-w-4xl">
@@ -39,34 +44,29 @@ export default function ClientDesignElements() {
         </p>
       </motion.div>
 
-      {categories.length === 0 ? (
+      {!hasData ? (
         <EmptyState
           title="Nenhum elemento de design registrado"
           subtitle="Sua estrategista ainda não registrou seus elementos de design."
           icon={<Shapes className="w-7 h-7 text-muted-foreground/40" />}
         />
       ) : (
-        <div className="space-y-6">
-          {categories.map((category, groupIdx) => (
-            <motion.div
-              key={category}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: groupIdx * 0.08 }}
-            >
-              <h2 className="font-display text-base md:text-lg gold-text mb-3">{category}</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {grouped[category]!.map((item) => (
-                  <div key={item.id} className="card-luxury p-4 md:p-5">
-                    <p className="font-display text-sm md:text-base mb-1">{item.descricao}</p>
-                    {item.observacao && (
-                      <p className="text-xs text-muted-foreground italic">{item.observacao}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {fields.map(({ key, label }) => {
+            const value = elements?.[key as keyof typeof elements];
+            if (!value) return null;
+            return (
+              <motion.div
+                key={key}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="card-luxury p-4 md:p-5"
+              >
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">{label}</p>
+                <p className="font-display text-sm md:text-base">{value as string}</p>
+              </motion.div>
+            );
+          })}
         </div>
       )}
     </div>
