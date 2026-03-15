@@ -65,7 +65,7 @@ export function useClientJourney() {
         { key: 'anamnese', completed: (anamnese.data?.progress ?? 0) > 0 },
         { key: 'analise', completed: !!analysis.data },
         { key: 'morfologia', completed: !!morphology.data },
-        { key: 'identidade', completed: !!styleIdentity.data?.objetivo_imagem },
+        { key: 'identidade', completed: !!styleIdentity.data?.image_objective },
         { key: 'coloracao', completed: (coloring.data?.length ?? 0) > 0 },
         { key: 'elementos', completed: (designElements.data?.length ?? 0) > 0 },
         { key: 'looks', completed: (looks.data?.length ?? 0) > 0 },

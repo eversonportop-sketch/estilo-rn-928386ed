@@ -39,12 +39,16 @@ export default function ClientStrategicAnalysis() {
   }
 
   const sections = [
-    { label: "Objetivo de Imagem", value: analysis.objetivo_imagem },
-    { label: "Pontos Fortes Visuais", value: analysis.pontos_fortes_visuais },
-    { label: "Pontos de Atenção", value: analysis.pontos_atencao },
-    { label: "Estratégia de Posicionamento", value: analysis.estrategia_posicionamento },
-    { label: "Recomendações Gerais", value: analysis.recomendacoes_gerais },
-    { label: "Observações Adicionais", value: analysis.observacoes_adicionais },
+    { label: "Objetivo de Imagem", value: analysis.image_objective },
+    { label: "Pontos Fortes", value: analysis.strengths },
+    { label: "Desafios", value: analysis.challenges },
+    { label: "Posicionamento", value: analysis.positioning },
+    { label: "Marca Pessoal", value: analysis.personal_brand },
+    { label: "Estilo de Vida", value: analysis.lifestyle },
+    { label: "Profissão", value: analysis.profession },
+    { label: "Objetivo de Comunicação", value: analysis.communication_objective },
+    { label: "Recomendações", value: analysis.recommendations },
+    { label: "Observações", value: analysis.notes },
   ].filter(s => s.value);
 
   return (

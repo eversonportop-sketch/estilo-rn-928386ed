@@ -105,27 +105,43 @@ export default function StrategicAnalysis() {
               <CardContent className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="objetivo">Objetivo de Imagem</Label>
-                  <Input id="objetivo" placeholder="Ex: Transmitir autoridade e sofisticação no ambiente corporativo" value={analysis.objetivoImagem} onChange={(e) => setAnalysis({ ...analysis, objetivoImagem: e.target.value })} />
+                  <Input id="objetivo" placeholder="Ex: Transmitir autoridade e sofisticação" value={analysis.imageObjective} onChange={(e) => setAnalysis({ ...analysis, imageObjective: e.target.value })} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="fortes">Pontos Fortes Visuais</Label>
-                  <Textarea id="fortes" placeholder="Descreva os pontos fortes visuais da cliente..." value={analysis.pontosFortesVisuais} onChange={(e) => setAnalysis({ ...analysis, pontosFortesVisuais: e.target.value })} rows={3} />
+                  <Label htmlFor="fortes">Pontos Fortes</Label>
+                  <Textarea id="fortes" placeholder="Descreva os pontos fortes da cliente..." value={analysis.strengths} onChange={(e) => setAnalysis({ ...analysis, strengths: e.target.value })} rows={3} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="atencao">Pontos de Atenção</Label>
-                  <Textarea id="atencao" placeholder="Descreva pontos que requerem atenção..." value={analysis.pontosAtencao} onChange={(e) => setAnalysis({ ...analysis, pontosAtencao: e.target.value })} rows={3} />
+                  <Label htmlFor="desafios">Desafios</Label>
+                  <Textarea id="desafios" placeholder="Descreva os desafios..." value={analysis.challenges} onChange={(e) => setAnalysis({ ...analysis, challenges: e.target.value })} rows={3} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="estrategia">Estratégia de Posicionamento</Label>
-                  <Textarea id="estrategia" placeholder="Defina a estratégia de posicionamento de imagem..." value={analysis.estrategiaPosicionamento} onChange={(e) => setAnalysis({ ...analysis, estrategiaPosicionamento: e.target.value })} rows={4} />
+                  <Label htmlFor="posicionamento">Posicionamento</Label>
+                  <Textarea id="posicionamento" placeholder="Defina o posicionamento..." value={analysis.positioning} onChange={(e) => setAnalysis({ ...analysis, positioning: e.target.value })} rows={4} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="recomendacoes">Recomendações Gerais</Label>
-                  <Textarea id="recomendacoes" placeholder="Liste as recomendações gerais para a cliente..." value={analysis.recomendacoesGerais} onChange={(e) => setAnalysis({ ...analysis, recomendacoesGerais: e.target.value })} rows={4} />
+                  <Label htmlFor="marca">Marca Pessoal</Label>
+                  <Textarea id="marca" placeholder="Descreva a marca pessoal..." value={analysis.personalBrand} onChange={(e) => setAnalysis({ ...analysis, personalBrand: e.target.value })} rows={3} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="observacoes">Observações Adicionais</Label>
-                  <Textarea id="observacoes" placeholder="Observações adicionais..." value={analysis.observacoesAdicionais} onChange={(e) => setAnalysis({ ...analysis, observacoesAdicionais: e.target.value })} rows={3} />
+                  <Label htmlFor="lifestyle">Estilo de Vida</Label>
+                  <Textarea id="lifestyle" placeholder="Descreva o estilo de vida..." value={analysis.lifestyle} onChange={(e) => setAnalysis({ ...analysis, lifestyle: e.target.value })} rows={3} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="profissao">Profissão</Label>
+                  <Input id="profissao" placeholder="Profissão da cliente" value={analysis.profession} onChange={(e) => setAnalysis({ ...analysis, profession: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="comunicacao">Objetivo de Comunicação</Label>
+                  <Textarea id="comunicacao" placeholder="Objetivo de comunicação..." value={analysis.communicationObjective} onChange={(e) => setAnalysis({ ...analysis, communicationObjective: e.target.value })} rows={3} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="recomendacoes">Recomendações</Label>
+                  <Textarea id="recomendacoes" placeholder="Liste as recomendações..." value={analysis.recommendations} onChange={(e) => setAnalysis({ ...analysis, recommendations: e.target.value })} rows={4} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="observacoes">Observações</Label>
+                  <Textarea id="observacoes" placeholder="Observações adicionais..." value={analysis.notes} onChange={(e) => setAnalysis({ ...analysis, notes: e.target.value })} rows={3} />
                 </div>
                 <Button onClick={handleSave} className="w-full md:w-auto" disabled={upsert.isPending}>
                   {upsert.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}

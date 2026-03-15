@@ -64,9 +64,9 @@ export default function ClientProfile() {
           <h2 className="font-display text-xl mb-4 flex items-center gap-2"><ClipboardList className="w-4 h-4 text-gold" /> Análise Estratégica</h2>
           {analysis ? (
             <div className="space-y-2 text-sm">
-              {analysis.objetivo_imagem && <p><span className="text-muted-foreground">Objetivo:</span> {analysis.objetivo_imagem}</p>}
-              {analysis.pontos_fortes_visuais && <p><span className="text-muted-foreground">Pontos fortes:</span> {analysis.pontos_fortes_visuais}</p>}
-              {analysis.estrategia_posicionamento && <p><span className="text-muted-foreground">Estratégia:</span> {analysis.estrategia_posicionamento}</p>}
+              {analysis.image_objective && <p><span className="text-muted-foreground">Objetivo:</span> {analysis.image_objective}</p>}
+              {analysis.strengths && <p><span className="text-muted-foreground">Pontos fortes:</span> {analysis.strengths}</p>}
+              {analysis.positioning && <p><span className="text-muted-foreground">Posicionamento:</span> {analysis.positioning}</p>}
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">Análise ainda não registrada.</p>
