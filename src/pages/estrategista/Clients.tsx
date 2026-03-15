@@ -158,4 +158,78 @@ export default function ClientsPage() {
                 {client.profession && <p><span className="text-muted-foreground">Profissão:</span> {client.profession}</p>}
                 {client.objective && <p><span className="text-muted-foreground">Objetivo:</span> {client.objective}</p>}
               </div>
-              {client.progress != null
+              {client.progress != null && (
+                <div className="mb-4">
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-muted-foreground">Progresso</span>
+                    <span className="text-gold-dark font-medium">{client.progress}%</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div className="h-full gold-gradient rounded-full transition-all duration-500" style={{ width: `${client.progress}%` }} />
+                  </div>
+                </div>
+              )}
+              <div className="flex gap-2 pt-2 border-t border-border">
+                <Link to={`/estrategista/clientes/${client.id}`} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-gold transition-colors">
+                  <Eye className="w-3.5 h-3.5" /> Ver
+                </Link>
+                <button onClick={() => openEdit(client)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-gold transition-colors">
+                  <Edit className="w-3.5 h-3.5" /> Editar
+                </button>
+                <button onClick={() => handleDelete(client.id)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-red-400 transition-colors ml-auto">
+                  <Trash2 className="w-3.5 h-3.5" /> Excluir
+                </button>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-card border border-border rounded-xl p-6 w-full max-w-md shadow-xl">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-display">{editingId ? "Editar Cliente" : "Nova Cliente"}</h2>
+              <button onClick={() => setShowModal(false)}><X className="w-5 h-5 text-muted-foreground hover:text-foreground" /></button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="name">Nome</Label>
+                <Input id="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Nome completo" />
+              </div>
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="email@exemplo.com" />
+              </div>
+              {!editingId && (
+                <div>
+                  <Label htmlFor="password">Senha de acesso</Label>
+                  <Input id="password" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Mínimo 6 caracteres" />
+                </div>
+              )}
+              <div>
+                <Label htmlFor="phone">Telefone</Label>
+                <Input id="phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="(00) 00000-0000" />
+              </div>
+              <div>
+                <Label htmlFor="profession">Profissão</Label>
+                <Input id="profession" value={form.profession} onChange={(e) => setForm({ ...form, profession: e.target.value })} placeholder="Ex: Advogada" />
+              </div>
+              <div>
+                <Label htmlFor="objective">Objetivo</Label>
+                <Input id="objective" value={form.objective} onChange={(e) => setForm({ ...form, objective: e.target.value })} placeholder="Ex: Imagem profissional" />
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 mt-6">
+              <button onClick={() => setShowModal(false)} className="px-4 py-2 text-sm border border-border rounded-lg hover:bg-muted transition-colors">Cancelar</button>
+              <button onClick={handleSave} disabled={isSaving} className="px-5 py-2 text-sm rounded-lg gold-gradient text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-2">
+                {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
+                {editingId ? "Salvar" : "Criar"}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </div>
+  );
+}
