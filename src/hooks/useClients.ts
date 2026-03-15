@@ -60,6 +60,17 @@ export function useCreateClient() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (payload: CreateClientInput) => {
+      // 1. Refresh session to get a fresh JWT
+      const { data: sessionData, error: sessionError } = await supabase.auth.refreshSession();
+      const session = sessionData?.session;
+
+      if (sessionError || !session) {
+        console.error('[create-client] No valid session', { sessionError, session });
+        throw new Error('Sessão expirada. Faça login novamente.');
+      }
+
+      console.log('[create-client] session ok, access_token present:', !!session.access_token);
+
       const body = {
         full_name: payload.full_name,
         email: payload.email,
@@ -73,6 +84,8 @@ export function useCreateClient() {
       console.log('[create-client] invoke payload', body);
 
       const { data, error } = await supabase.functions.invoke('create-client', { body });
+
+      console.log('[create-client] invoke response', { data, error });
 
       if (error) {
         let detailedMessage = error.message || 'Erro ao criar cliente';
@@ -103,7 +116,7 @@ export function useCreateClient() {
       }
 
       if (data?.error) {
-        console.error('[create-client] invoke returned business error', { data });
+        console.error('[create-client] business error', { data });
         throw new Error(data.error);
       }
 
