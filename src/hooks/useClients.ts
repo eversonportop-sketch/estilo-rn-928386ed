@@ -1,5 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface Client {
   id: string;
@@ -18,12 +18,9 @@ export interface Client {
 
 export function useClients() {
   return useQuery({
-    queryKey: ['clients'],
+    queryKey: ["clients"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('clients')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabase.from("clients").select("*").order("created_at", { ascending: false });
       if (error) throw error;
       return data as Client[];
     },
@@ -32,14 +29,10 @@ export function useClients() {
 
 export function useClient(id: string | undefined) {
   return useQuery({
-    queryKey: ['clients', id],
+    queryKey: ["clients", id],
     enabled: !!id,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('clients')
-        .select('*')
-        .eq('id', id!)
-        .single();
+      const { data, error } = await supabase.from("clients").select("*").eq("id", id!).single();
       if (error) throw error;
       return data as Client;
     },
@@ -47,7 +40,7 @@ export function useClient(id: string | undefined) {
 }
 
 interface CreateClientInput {
-  full_name: string;
+  name: string;
   email: string;
   phone?: string;
   profession?: string;
@@ -60,19 +53,15 @@ export function useCreateClient() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (payload: CreateClientInput) => {
-      // 1. Refresh session to get a fresh JWT
       const { data: sessionData, error: sessionError } = await supabase.auth.refreshSession();
       const session = sessionData?.session;
 
       if (sessionError || !session) {
-        console.error('[create-client] No valid session', { sessionError, session });
-        throw new Error('Sessão expirada. Faça login novamente.');
+        throw new Error("Sessão expirada. Faça login novamente.");
       }
 
-      console.log('[create-client] session ok, access_token present:', !!session.access_token);
-
       const body = {
-        full_name: payload.full_name,
+        name: payload.name,
         email: payload.email,
         phone: payload.phone,
         profession: payload.profession,
@@ -81,14 +70,10 @@ export function useCreateClient() {
         consultant_id: payload.consultant_id,
       };
 
-      console.log('[create-client] invoke payload', body);
-
-      const { data, error } = await supabase.functions.invoke('create-client', { body });
-
-      console.log('[create-client] invoke response', { data, error });
+      const { data, error } = await supabase.functions.invoke("create-client", { body });
 
       if (error) {
-        let detailedMessage = error.message || 'Erro ao criar cliente';
+        let detailedMessage = error.message || "Erro ao criar cliente";
         let errorResponse: unknown = null;
         const context = (error as { context?: Response }).context;
 
@@ -104,25 +89,23 @@ export function useCreateClient() {
           }
         }
 
-        if (errorResponse && typeof errorResponse === 'object') {
+        if (errorResponse && typeof errorResponse === "object") {
           const typedResponse = errorResponse as { error?: string; message?: string };
           detailedMessage = typedResponse.error || typedResponse.message || detailedMessage;
-        } else if (typeof errorResponse === 'string' && errorResponse.trim()) {
+        } else if (typeof errorResponse === "string" && errorResponse.trim()) {
           detailedMessage = errorResponse;
         }
 
-        console.error('[create-client] invoke failed', { error, errorResponse });
         throw new Error(detailedMessage);
       }
 
       if (data?.error) {
-        console.error('[create-client] business error', { data });
         throw new Error(data.error);
       }
 
       return data as Client;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['clients'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["clients"] }),
   });
 }
 
@@ -130,11 +113,11 @@ export function useUpdateClient() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<Client> & { id: string }) => {
-      const { data, error } = await supabase.from('clients').update(updates).eq('id', id).select().single();
+      const { data, error } = await supabase.from("clients").update(updates).eq("id", id).select().single();
       if (error) throw error;
       return data as Client;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['clients'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["clients"] }),
   });
 }
 
@@ -142,9 +125,9 @@ export function useDeleteClient() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('clients').delete().eq('id', id);
+      const { error } = await supabase.from("clients").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['clients'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["clients"] }),
   });
 }
