@@ -52,12 +52,16 @@ export default function StrategicAnalysis() {
     if (!selectedClient) { toast.error("Selecione uma cliente"); return; }
     upsert.mutate({
       client_id: selectedClient,
-      objetivo_imagem: analysis.objetivoImagem,
-      pontos_fortes_visuais: analysis.pontosFortesVisuais,
-      pontos_atencao: analysis.pontosAtencao,
-      estrategia_posicionamento: analysis.estrategiaPosicionamento,
-      recomendacoes_gerais: analysis.recomendacoesGerais,
-      observacoes_adicionais: analysis.observacoesAdicionais,
+      image_objective: analysis.imageObjective,
+      strengths: analysis.strengths,
+      challenges: analysis.challenges,
+      positioning: analysis.positioning,
+      personal_brand: analysis.personalBrand,
+      lifestyle: analysis.lifestyle,
+      profession: analysis.profession,
+      communication_objective: analysis.communicationObjective,
+      recommendations: analysis.recommendations,
+      notes: analysis.notes,
     }, {
       onSuccess: () => toast.success("Análise estratégica salva com sucesso!"),
       onError: (e) => toast.error("Erro: " + e.message),
