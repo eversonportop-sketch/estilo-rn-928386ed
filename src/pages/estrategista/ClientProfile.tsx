@@ -1,6 +1,18 @@
 import { motion } from "framer-motion";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Mail, Phone, Briefcase, Target, Loader2, ClipboardList, Palette, User, Ruler, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  Mail,
+  Phone,
+  Briefcase,
+  Target,
+  Loader2,
+  ClipboardList,
+  Palette,
+  User,
+  Ruler,
+  Sparkles,
+} from "lucide-react";
 import { useClient } from "@/hooks/useClients";
 import { useClientStrategicAnalysis } from "@/hooks/useStrategicAnalysis";
 import { useClientMorphology } from "@/hooks/useMorphology";
@@ -28,7 +40,10 @@ export default function ClientProfile() {
   if (!client) {
     return (
       <div className="p-8">
-        <Link to="/estrategista/clientes" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors">
+        <Link
+          to="/estrategista/clientes"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors"
+        >
           <ArrowLeft className="w-4 h-4" /> Voltar para Clientes
         </Link>
         <p className="text-muted-foreground">Cliente não encontrada.</p>
@@ -38,7 +53,10 @@ export default function ClientProfile() {
 
   return (
     <div className="p-8 lg:p-12 max-w-5xl">
-      <Link to="/estrategista/clientes" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors">
+      <Link
+        to="/estrategista/clientes"
+        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors"
+      >
         <ArrowLeft className="w-4 h-4" /> Voltar para Clientes
       </Link>
 
@@ -49,24 +67,70 @@ export default function ClientProfile() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Personal Info */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="card-luxury p-6">
-          <h2 className="font-display text-xl mb-4 flex items-center gap-2"><User className="w-4 h-4 text-gold" /> Informações Pessoais</h2>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="card-luxury p-6"
+        >
+          <h2 className="font-display text-xl mb-4 flex items-center gap-2">
+            <User className="w-4 h-4 text-gold" /> Informações Pessoais
+          </h2>
           <div className="space-y-3">
-            {client.email && <div className="flex items-center gap-3 text-sm"><Mail className="w-4 h-4 text-gold" /><span>{client.email}</span></div>}
-            {client.phone && <div className="flex items-center gap-3 text-sm"><Phone className="w-4 h-4 text-gold" /><span>{client.phone}</span></div>}
-            {client.profession && <div className="flex items-center gap-3 text-sm"><Briefcase className="w-4 h-4 text-gold" /><span>{client.profession}</span></div>}
-            {client.objective && <div className="flex items-center gap-3 text-sm"><Target className="w-4 h-4 text-gold" /><span>{client.objective}</span></div>}
+            {client.email && (
+              <div className="flex items-center gap-3 text-sm">
+                <Mail className="w-4 h-4 text-gold" />
+                <span>{client.email}</span>
+              </div>
+            )}
+            {client.phone && (
+              <div className="flex items-center gap-3 text-sm">
+                <Phone className="w-4 h-4 text-gold" />
+                <span>{client.phone}</span>
+              </div>
+            )}
+            {client.profession && (
+              <div className="flex items-center gap-3 text-sm">
+                <Briefcase className="w-4 h-4 text-gold" />
+                <span>{client.profession}</span>
+              </div>
+            )}
+            {client.objective && (
+              <div className="flex items-center gap-3 text-sm">
+                <Target className="w-4 h-4 text-gold" />
+                <span>{client.objective}</span>
+              </div>
+            )}
           </div>
         </motion.div>
 
         {/* Strategic Analysis */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="card-luxury p-6">
-          <h2 className="font-display text-xl mb-4 flex items-center gap-2"><ClipboardList className="w-4 h-4 text-gold" /> Análise Estratégica</h2>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="card-luxury p-6"
+        >
+          <h2 className="font-display text-xl mb-4 flex items-center gap-2">
+            <ClipboardList className="w-4 h-4 text-gold" /> Análise Estratégica
+          </h2>
           {analysis ? (
             <div className="space-y-2 text-sm">
-              {analysis.image_objective && <p><span className="text-muted-foreground">Objetivo:</span> {analysis.image_objective}</p>}
-              {analysis.strengths && <p><span className="text-muted-foreground">Pontos fortes:</span> {analysis.strengths}</p>}
-              {analysis.positioning && <p><span className="text-muted-foreground">Posicionamento:</span> {analysis.positioning}</p>}
+              {analysis.image_objective && (
+                <p>
+                  <span className="text-muted-foreground">Objetivo:</span> {analysis.image_objective}
+                </p>
+              )}
+              {analysis.strengths && (
+                <p>
+                  <span className="text-muted-foreground">Pontos fortes:</span> {analysis.strengths}
+                </p>
+              )}
+              {analysis.positioning && (
+                <p>
+                  <span className="text-muted-foreground">Posicionamento:</span> {analysis.positioning}
+                </p>
+              )}
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">Análise ainda não registrada.</p>
@@ -74,12 +138,42 @@ export default function ClientProfile() {
         </motion.div>
 
         {/* Morphology */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="card-luxury p-6">
-          <h2 className="font-display text-xl mb-4 flex items-center gap-2"><Ruler className="w-4 h-4 text-gold" /> Morfologia</h2>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="card-luxury p-6"
+        >
+          <h2 className="font-display text-xl mb-4 flex items-center gap-2">
+            <Ruler className="w-4 h-4 text-gold" /> Morfologia
+          </h2>
           {morphology ? (
             <div className="space-y-2 text-sm">
-              <p><span className="text-muted-foreground">Tipo corporal:</span> {morphology.body_type}</p>
-              {morphology.notes && <p><span className="text-muted-foreground">Notas:</span> {morphology.notes}</p>}
+              {morphology.body_type && (
+                <p>
+                  <span className="text-muted-foreground">Tipo corporal:</span> {morphology.body_type}
+                </p>
+              )}
+              {morphology.shoulders && (
+                <p>
+                  <span className="text-muted-foreground">Ombros:</span> {morphology.shoulders}
+                </p>
+              )}
+              {morphology.waist && (
+                <p>
+                  <span className="text-muted-foreground">Cintura:</span> {morphology.waist}
+                </p>
+              )}
+              {morphology.hips && (
+                <p>
+                  <span className="text-muted-foreground">Quadris:</span> {morphology.hips}
+                </p>
+              )}
+              {morphology.notes && (
+                <p>
+                  <span className="text-muted-foreground">Notas:</span> {morphology.notes}
+                </p>
+              )}
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">Morfologia ainda não registrada.</p>
@@ -87,16 +181,42 @@ export default function ClientProfile() {
         </motion.div>
 
         {/* Design Elements */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="card-luxury p-6">
-          <h2 className="font-display text-xl mb-4 flex items-center gap-2"><Palette className="w-4 h-4 text-gold" /> Elementos de Design</h2>
-          {designElements && designElements.length > 0 ? (
-            <div className="space-y-2">
-              {designElements.map(el => (
-                <div key={el.id} className="text-sm">
-                  <span className="text-gold text-xs">{el.categoria}</span>
-                  <p>{el.descricao}</p>
-                </div>
-              ))}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="card-luxury p-6"
+        >
+          <h2 className="font-display text-xl mb-4 flex items-center gap-2">
+            <Palette className="w-4 h-4 text-gold" /> Elementos de Design
+          </h2>
+          {designElements ? (
+            <div className="space-y-2 text-sm">
+              {designElements.lines && (
+                <p>
+                  <span className="text-muted-foreground">Linhas:</span> {designElements.lines}
+                </p>
+              )}
+              {designElements.shapes && (
+                <p>
+                  <span className="text-muted-foreground">Formas:</span> {designElements.shapes}
+                </p>
+              )}
+              {designElements.textures && (
+                <p>
+                  <span className="text-muted-foreground">Texturas:</span> {designElements.textures}
+                </p>
+              )}
+              {designElements.accessories && (
+                <p>
+                  <span className="text-muted-foreground">Acessórios:</span> {designElements.accessories}
+                </p>
+              )}
+              {designElements.recommendations && (
+                <p>
+                  <span className="text-muted-foreground">Recomendações:</span> {designElements.recommendations}
+                </p>
+              )}
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">Elementos ainda não registrados.</p>
@@ -104,8 +224,15 @@ export default function ClientProfile() {
         </motion.div>
 
         {/* Summary Stats */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="card-luxury p-6 lg:col-span-2">
-          <h2 className="font-display text-xl mb-4 flex items-center gap-2"><Sparkles className="w-4 h-4 text-gold" /> Resumo</h2>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="card-luxury p-6 lg:col-span-2"
+        >
+          <h2 className="font-display text-xl mb-4 flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-gold" /> Resumo
+          </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
               <p className="text-2xl font-display text-gold">{wardrobeItems?.length ?? 0}</p>
@@ -116,7 +243,7 @@ export default function ClientProfile() {
               <p className="text-xs text-muted-foreground">Looks Criados</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-display text-gold">{designElements?.length ?? 0}</p>
+              <p className="text-2xl font-display text-gold">{designElements ? "✓" : "—"}</p>
               <p className="text-xs text-muted-foreground">Elementos de Design</p>
             </div>
             <div className="text-center">
