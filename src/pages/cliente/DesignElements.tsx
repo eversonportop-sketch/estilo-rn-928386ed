@@ -1,21 +1,76 @@
-import { motion } from "framer-motion";
-import { Shapes, Loader2 } from "lucide-react";
-import { useClientDesignElements } from "@/hooks/useDesignElements";
-import { getActiveClientId } from "@/hooks/useActiveClient";
-import EmptyState from "@/components/EmptyState";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { User, Shapes, Save, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { useClients } from "@/hooks/useClients";
+import { useClientDesignElements, useUpsertDesignElements } from "@/hooks/useDesignElements";
 
-export default function ClientDesignElements() {
-  const clientId = getActiveClientId();
-  const { data: elements, isLoading } = useClientDesignElements(clientId ?? undefined);
+export default function DesignElements() {
+  const [selectedClient, setSelectedClient] = useState("");
+  const [form, setForm] = useState({
+    lines: "",
+    shapes: "",
+    scale: "",
+    contrast: "",
+    textures: "",
+    fabrics: "",
+    prints: "",
+    accessories: "",
+    recommendations: "",
+    notes: "",
+  });
 
-  if (isLoading) {
-    return (
-      <div className="p-4 md:p-8 max-w-4xl flex items-center justify-center py-20">
-        <Loader2 className="w-5 h-5 animate-spin text-gold" />
-        <span className="ml-2 text-sm text-muted-foreground">Carregando elementos...</span>
-      </div>
+  const { data: clients, isLoading: loadingClients } = useClients();
+  const { data: elements, isLoading: loadingElements } = useClientDesignElements(selectedClient || undefined);
+  const upsert = useUpsertDesignElements();
+
+  useEffect(() => {
+    if (elements) {
+      setForm({
+        lines: elements.lines || "",
+        shapes: elements.shapes || "",
+        scale: elements.scale || "",
+        contrast: elements.contrast || "",
+        textures: elements.textures || "",
+        fabrics: elements.fabrics || "",
+        prints: elements.prints || "",
+        accessories: elements.accessories || "",
+        recommendations: elements.recommendations || "",
+        notes: elements.notes || "",
+      });
+    } else {
+      setForm({
+        lines: "",
+        shapes: "",
+        scale: "",
+        contrast: "",
+        textures: "",
+        fabrics: "",
+        prints: "",
+        accessories: "",
+        recommendations: "",
+        notes: "",
+      });
+    }
+  }, [elements]);
+
+  const handleSave = () => {
+    if (!selectedClient) {
+      toast.error("Selecione uma cliente");
+      return;
+    }
+    upsert.mutate(
+      { client_id: selectedClient, ...form },
+      {
+        onSuccess: () => toast.success("Elementos de design salvos!"),
+        onError: (e) => toast.error("Erro: " + e.message),
+      },
     );
-  }
+  };
 
   const fields = [
     { key: "lines", label: "Linhas" },
@@ -30,44 +85,84 @@ export default function ClientDesignElements() {
     { key: "notes", label: "Observações" },
   ];
 
-  const hasData = elements && Object.values(elements).some((v) => typeof v === "string" && v.trim() !== "");
-
   return (
-    <div className="p-4 md:p-8 max-w-4xl">
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="flex items-center gap-3 mb-2">
-          <Shapes className="w-6 h-6 text-gold" />
-          <h1 className="text-2xl md:text-4xl font-display font-light">Meus Elementos de Design</h1>
-        </div>
-        <p className="text-muted-foreground text-xs md:text-sm mb-8 md:mb-10">
-          Recomendações de linhas, formas, tecidos e acessórios para o seu estilo
+    <div className="space-y-6 md:space-y-8">
+      <div>
+        <h1 className="text-2xl md:text-3xl font-display text-foreground tracking-wide">Elementos de Design</h1>
+        <p className="text-sm text-muted-foreground mt-2">
+          Defina as recomendações de elementos de design para a cliente
         </p>
-      </motion.div>
+      </div>
 
-      {!hasData ? (
-        <EmptyState
-          title="Nenhum elemento de design registrado"
-          subtitle="Sua estrategista ainda não registrou seus elementos de design."
-          icon={<Shapes className="w-7 h-7 text-muted-foreground/40" />}
-        />
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {fields.map(({ key, label }) => {
-            const value = elements?.[key as keyof typeof elements];
-            if (!value) return null;
-            return (
-              <motion.div
-                key={key}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="card-luxury p-4 md:p-5"
-              >
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">{label}</p>
-                <p className="font-display text-sm md:text-base">{value as string}</p>
-              </motion.div>
-            );
-          })}
-        </div>
+      <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <User className="w-5 h-5 text-primary" />
+            Selecionar Cliente
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loadingClients ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="w-4 h-4 animate-spin" /> Carregando...
+            </div>
+          ) : (
+            <Select value={selectedClient} onValueChange={setSelectedClient}>
+              <SelectTrigger className="w-full md:w-64">
+                <SelectValue placeholder="Escolha uma cliente" />
+              </SelectTrigger>
+              <SelectContent>
+                {(clients || []).map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </CardContent>
+      </Card>
+
+      {selectedClient && (
+        <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Shapes className="w-5 h-5 text-primary" />
+              Elementos de Design
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {loadingElements ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="w-4 h-4 animate-spin" /> Carregando...
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {fields.map(({ key, label }) => (
+                    <div key={key} className="space-y-2">
+                      <Label>{label}</Label>
+                      <Textarea
+                        placeholder={`${label}...`}
+                        value={form[key as keyof typeof form]}
+                        onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                        rows={2}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <Button onClick={handleSave} className="w-full md:w-auto" disabled={upsert.isPending}>
+                  {upsert.isPending ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4 mr-2" />
+                  )}
+                  Salvar Elementos
+                </Button>
+              </>
+            )}
+          </CardContent>
+        </Card>
       )}
     </div>
   );
