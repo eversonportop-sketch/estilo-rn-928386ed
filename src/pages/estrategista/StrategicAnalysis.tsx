@@ -32,15 +32,19 @@ export default function StrategicAnalysis() {
   useEffect(() => {
     if (existing) {
       setAnalysis({
-        objetivoImagem: existing.objetivo_imagem || "",
-        pontosFortesVisuais: existing.pontos_fortes_visuais || "",
-        pontosAtencao: existing.pontos_atencao || "",
-        estrategiaPosicionamento: existing.estrategia_posicionamento || "",
-        recomendacoesGerais: existing.recomendacoes_gerais || "",
-        observacoesAdicionais: existing.observacoes_adicionais || "",
+        imageObjective: existing.image_objective || "",
+        strengths: existing.strengths || "",
+        challenges: existing.challenges || "",
+        positioning: existing.positioning || "",
+        personalBrand: existing.personal_brand || "",
+        lifestyle: existing.lifestyle || "",
+        profession: existing.profession || "",
+        communicationObjective: existing.communication_objective || "",
+        recommendations: existing.recommendations || "",
+        notes: existing.notes || "",
       });
     } else {
-      setAnalysis({ objetivoImagem: "", pontosFortesVisuais: "", pontosAtencao: "", estrategiaPosicionamento: "", recomendacoesGerais: "", observacoesAdicionais: "" });
+      setAnalysis({ imageObjective: "", strengths: "", challenges: "", positioning: "", personalBrand: "", lifestyle: "", profession: "", communicationObjective: "", recommendations: "", notes: "" });
     }
   }, [existing]);
 
