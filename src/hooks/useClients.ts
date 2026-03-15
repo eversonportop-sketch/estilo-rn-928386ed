@@ -47,30 +47,66 @@ export function useClient(id: string | undefined) {
 }
 
 interface CreateClientInput {
-  name: string;
+  full_name: string;
   email: string;
   phone?: string;
   profession?: string;
   objective?: string;
-  status?: string;
-  password?: string;
+  password: string;
+  consultant_id: string;
 }
 
 export function useCreateClient() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ password, ...clientData }: CreateClientInput) => {
-      const { data, error } = await supabase.functions.invoke('create-client', {
-        body: { ...clientData, password },
-      });
+    mutationFn: async (payload: CreateClientInput) => {
+      const body = {
+        full_name: payload.full_name,
+        email: payload.email,
+        phone: payload.phone,
+        profession: payload.profession,
+        objective: payload.objective,
+        password: payload.password,
+        consultant_id: payload.consultant_id,
+      };
+
+      console.log('[create-client] invoke payload', body);
+
+      const { data, error } = await supabase.functions.invoke('create-client', { body });
+
       if (error) {
-        // Try to parse error context from the response
-        const msg = (error as any)?.context?.body
-          ? await (error as any).context.json().then((b: any) => b.error).catch(() => error.message)
-          : error.message;
-        throw new Error(msg || 'Erro ao criar cliente');
+        let detailedMessage = error.message || 'Erro ao criar cliente';
+        let errorResponse: unknown = null;
+        const context = (error as { context?: Response }).context;
+
+        if (context) {
+          try {
+            errorResponse = await context.json();
+          } catch {
+            try {
+              errorResponse = await context.text();
+            } catch {
+              errorResponse = null;
+            }
+          }
+        }
+
+        if (errorResponse && typeof errorResponse === 'object') {
+          const typedResponse = errorResponse as { error?: string; message?: string };
+          detailedMessage = typedResponse.error || typedResponse.message || detailedMessage;
+        } else if (typeof errorResponse === 'string' && errorResponse.trim()) {
+          detailedMessage = errorResponse;
+        }
+
+        console.error('[create-client] invoke failed', { error, errorResponse });
+        throw new Error(detailedMessage);
       }
-      if (data?.error) throw new Error(data.error);
+
+      if (data?.error) {
+        console.error('[create-client] invoke returned business error', { data });
+        throw new Error(data.error);
+      }
+
       return data as Client;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['clients'] }),

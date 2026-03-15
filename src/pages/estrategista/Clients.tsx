@@ -3,6 +3,7 @@ import { Search, Plus, Eye, Edit, Trash2, Loader2, X } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useClients, useCreateClient, useUpdateClient, useDeleteClient } from "@/hooks/useClients";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,6 +19,7 @@ export default function ClientsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
 
+  const { user } = useAuth();
   const { data: clients, isLoading } = useClients();
   const createClient = useCreateClient();
   const updateClient = useUpdateClient();
@@ -69,9 +71,25 @@ export default function ClientsPage() {
         onError: (e) => toast.error("Erro: " + e.message),
       });
     } else {
-      createClient.mutate(form, {
+      if (!user?.id) {
+        toast.error("Estrategista não autenticada.");
+        return;
+      }
+
+      createClient.mutate({
+        full_name: form.name,
+        email: form.email,
+        phone: form.phone || undefined,
+        profession: form.profession || undefined,
+        objective: form.objective || undefined,
+        password: form.password,
+        consultant_id: user.id,
+      }, {
         onSuccess: () => { toast.success("Cliente criada com login!"); setShowModal(false); },
-        onError: (e) => toast.error("Erro: " + e.message),
+        onError: (e) => {
+          const message = e instanceof Error ? e.message : "Erro ao criar cliente";
+          toast.error(message);
+        },
       });
     }
   };
