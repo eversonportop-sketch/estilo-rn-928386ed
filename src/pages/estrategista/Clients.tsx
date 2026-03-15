@@ -77,7 +77,7 @@ export default function ClientsPage() {
       }
 
       createClient.mutate({
-        full_name: form.name,
+        name: form.name,
         email: form.email,
         phone: form.phone || undefined,
         profession: form.profession || undefined,
@@ -158,79 +158,4 @@ export default function ClientsPage() {
                 {client.profession && <p><span className="text-muted-foreground">Profissão:</span> {client.profession}</p>}
                 {client.objective && <p><span className="text-muted-foreground">Objetivo:</span> {client.objective}</p>}
               </div>
-              {client.progress != null && (
-                <div className="mb-4">
-                  <div className="flex justify-between text-xs mb-1">
-                    <span className="text-muted-foreground">Progresso</span>
-                    <span className="text-gold-dark font-medium">{client.progress}%</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full gold-gradient rounded-full" style={{ width: `${client.progress}%` }} />
-                  </div>
-                </div>
-              )}
-              <div className="flex gap-2">
-                <Link to={`/estrategista/clientes/${client.id}`} className="flex items-center gap-1 text-xs px-3 py-2 rounded-lg border border-border hover:border-gold/40 transition-colors">
-                  <Eye className="w-3 h-3" /> Ver
-                </Link>
-                <button onClick={() => openEdit(client)} className="flex items-center gap-1 text-xs px-3 py-2 rounded-lg border border-border hover:border-gold/40 transition-colors">
-                  <Edit className="w-3 h-3" /> Editar
-                </button>
-                <button onClick={() => handleDelete(client.id)} className="flex items-center gap-1 text-xs px-3 py-2 rounded-lg border border-border hover:border-destructive/40 text-destructive/70 hover:text-destructive transition-colors">
-                  <Trash2 className="w-3 h-3" /> Excluir
-                </button>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      )}
-
-      {/* Modal Nova/Editar Cliente */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-card border border-border rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-display">{editingId ? "Editar Cliente" : "Nova Cliente"}</h2>
-              <button onClick={() => setShowModal(false)} className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></button>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <Label>Nome *</Label>
-                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Nome completo" />
-              </div>
-              <div>
-                <Label>Email *</Label>
-                <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="email@exemplo.com" />
-              </div>
-              <div>
-                <Label>Telefone</Label>
-                <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="(00) 00000-0000" />
-              </div>
-              <div>
-                <Label>Profissão</Label>
-                <Input value={form.profession} onChange={(e) => setForm({ ...form, profession: e.target.value })} placeholder="Profissão" />
-              </div>
-              <div>
-                <Label>Objetivo</Label>
-                <Input value={form.objective} onChange={(e) => setForm({ ...form, objective: e.target.value })} placeholder="Objetivo da consultoria" />
-              </div>
-              {!editingId && (
-                <div>
-                  <Label>Senha de acesso *</Label>
-                  <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Senha para login da cliente" />
-                </div>
-              )}
-            </div>
-            <div className="flex gap-3 mt-6 justify-end">
-              <button onClick={() => setShowModal(false)} className="px-4 py-2 text-sm rounded-lg border border-border hover:bg-muted transition-colors">Cancelar</button>
-              <button onClick={handleSave} disabled={isSaving} className="flex items-center gap-2 px-5 py-2 text-sm rounded-lg gold-gradient text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50">
-                {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
-                {editingId ? "Salvar" : "Criar"}
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      )}
-    </div>
-  );
-}
+              {client.progress != null
