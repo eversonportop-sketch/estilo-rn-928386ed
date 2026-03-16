@@ -39,7 +39,6 @@ Deno.serve(async (req) => {
 
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
-    // ✅ Busca o id correto do consultor pelo profile_id
     const { data: consultantData, error: consultantError } = await adminClient
       .from("consultants")
       .select("id")
@@ -69,6 +68,26 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ✅ Verifica se email já existe em clients
+    const { data: existingClient } = await adminClient.from("clients").select("id").eq("email", email).maybeSingle();
+
+    if (existingClient) {
+      return new Response(JSON.stringify({ error: "Este email já está cadastrado como cliente." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ✅ Verifica se email já existe no Auth
+    const { data: authList } = await adminClient.auth.admin.listUsers({ perPage: 1000 });
+    const emailJaExiste = authList?.users?.find((u) => u.email === email);
+    if (emailJaExiste) {
+      return new Response(JSON.stringify({ error: "Este email já está em uso." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
       email,
       password,
@@ -93,12 +112,13 @@ Deno.serve(async (req) => {
         profession: profession || null,
         objective: objective || null,
         user_id: userId,
-        consultant_id: consultantData.id, // ✅ id correto
+        consultant_id: consultantData.id,
       })
       .select()
       .single();
 
     if (clientError) {
+      // Rollback: remove usuário do Auth se insert falhar
       await adminClient.auth.admin.deleteUser(userId);
       return new Response(JSON.stringify({ error: `Erro ao criar cliente: ${clientError.message}` }), {
         status: 400,
