@@ -1,18 +1,12 @@
 import { motion } from "framer-motion";
 import { useState, useRef } from "react";
-import { Plus, Image, Trash2, Tag, Loader2 } from "lucide-react";
+import { Plus, Image, Trash2, Loader2 } from "lucide-react";
 import { useClients } from "@/hooks/useClients";
 import { useWardrobeItems, useDeleteWardrobeItem } from "@/hooks/useWardrobeItems";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQueryClient } from "@tanstack/react-query";
-
-const categories = [
-  { value: "cliente", label: "Foto da Cliente" },
-  { value: "referencia", label: "Imagem de Referência" },
-  { value: "analise", label: "Análise Visual" },
-];
 
 export default function StrategistPhotos() {
   const { data: clients, isLoading: clientsLoading } = useClients();
@@ -21,11 +15,7 @@ export default function StrategistPhotos() {
   const deleteItem = useDeleteWardrobeItem();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
-  const [filter, setFilter] = useState<string>("todos");
   const qc = useQueryClient();
-
-  const filtered = filter === "todos" ? (items || []) : (items || []).filter(p => p.categoria === filter);
-  const categoriesFromItems = Array.from(new Set((items || []).map(i => i.categoria))).filter(Boolean);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -33,29 +23,27 @@ export default function StrategistPhotos() {
 
     setUploading(true);
     try {
-      const ext = file.name.split('.').pop();
+      const ext = file.name.split(".").pop();
       const fileName = `${selectedClient}/${Date.now()}.${ext}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('wardrobe')
-        .upload(fileName, file, { upsert: false });
+      const { error: uploadError } = await supabase.storage.from("wardrobe").upload(fileName, file, { upsert: false });
       if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage.from('wardrobe').getPublicUrl(fileName);
-      const nome = file.name.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ");
+      const { data: urlData } = supabase.storage.from("wardrobe").getPublicUrl(fileName);
+      const name = file.name.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ");
 
       const { error: insertError } = await supabase.from("wardrobe_items").insert({
         client_id: selectedClient,
-        nome,
-        categoria: "Geral",
+        name,
         image_url: urlData.publicUrl,
+        created_by_role: "estrategista",
+        source_type: "manual",
       });
       if (insertError) throw insertError;
 
       qc.invalidateQueries({ queryKey: ["wardrobe_items", selectedClient] });
       toast.success("Foto adicionada com sucesso!");
     } catch (err: any) {
-      console.error(err);
       toast.error("Erro ao enviar foto: " + (err.message || ""));
     } finally {
       setUploading(false);
@@ -65,13 +53,14 @@ export default function StrategistPhotos() {
 
   const handleDelete = (id: string) => {
     if (!confirm("Excluir esta foto?")) return;
-    deleteItem.mutate({ id, clientId: selectedClient }, {
-      onSuccess: () => toast.success("Foto excluída!"),
-      onError: (e) => toast.error("Erro: " + e.message),
-    });
+    deleteItem.mutate(
+      { id, clientId: selectedClient },
+      {
+        onSuccess: () => toast.success("Foto excluída!"),
+        onError: (e) => toast.error("Erro: " + e.message),
+      },
+    );
   };
-
-  const getImageUrl = (item: any) => item.image_url || item.foto || "";
 
   return (
     <div className="p-4 md:p-8 max-w-6xl">
@@ -104,8 +93,10 @@ export default function StrategistPhotos() {
             <SelectValue placeholder={clientsLoading ? "Carregando..." : "Selecione uma cliente"} />
           </SelectTrigger>
           <SelectContent>
-            {(clients || []).map(c => (
-              <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+            {(clients || []).map((c) => (
+              <SelectItem key={c.id} value={c.id}>
+                {c.name}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -121,61 +112,50 @@ export default function StrategistPhotos() {
         <div className="flex items-center justify-center py-20 gap-2 text-muted-foreground">
           <Loader2 className="w-5 h-5 animate-spin" /> Carregando fotos...
         </div>
+      ) : (items || []).length === 0 ? (
+        <div className="text-center py-16 text-muted-foreground">
+          <Image className="w-12 h-12 mx-auto mb-4 opacity-20" />
+          <p className="font-display text-xl mb-2">Nenhuma foto encontrada</p>
+          <p className="text-sm">Adicione fotos e referências visuais para esta cliente.</p>
+        </div>
       ) : (
-        <>
-          {categoriesFromItems.length > 0 && (
-            <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-              <button onClick={() => setFilter("todos")} className={`px-4 py-2 rounded-full text-xs whitespace-nowrap transition-colors ${filter === "todos" ? "gold-gradient text-primary-foreground" : "border border-border hover:border-gold/40"}`}>
-                Todas
-              </button>
-              {categoriesFromItems.map(cat => (
-                <button key={cat} onClick={() => setFilter(cat)} className={`px-4 py-2 rounded-full text-xs whitespace-nowrap transition-colors ${filter === cat ? "gold-gradient text-primary-foreground" : "border border-border hover:border-gold/40"}`}>
-                  {cat}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {filtered.length === 0 ? (
-            <div className="text-center py-16 text-muted-foreground">
-              <Image className="w-12 h-12 mx-auto mb-4 opacity-20" />
-              <p className="font-display text-xl mb-2">Nenhuma foto encontrada</p>
-              <p className="text-sm">Adicione fotos e referências visuais para esta cliente.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              {filtered.map((item, idx) => {
-                const imgUrl = getImageUrl(item);
-                return (
-                  <motion.div key={item.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }} className="card-luxury overflow-hidden group">
-                    <div className="relative aspect-video overflow-hidden bg-muted">
-                      {imgUrl ? (
-                        <img src={imgUrl} alt={item.nome} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Image className="w-8 h-8 text-muted-foreground/20" />
-                        </div>
-                      )}
-                      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => handleDelete(item.id)} className="p-1.5 bg-black/50 backdrop-blur rounded-lg text-white hover:bg-red-500/80 transition-colors">
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="p-3 md:p-4">
-                      <h3 className="font-display text-sm md:text-base mb-1">{item.nome}</h3>
-                      <div className="flex items-center gap-1 mb-2">
-                        <Tag className="w-3 h-3 text-gold" />
-                        <span className="text-[10px] text-gold">{item.categoria}</span>
-                      </div>
-                      {item.observacao && <p className="text-xs text-muted-foreground">{item.observacao}</p>}
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          )}
-        </>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          {(items || []).map((item, idx) => (
+            <motion.div
+              key={item.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.05 }}
+              className="card-luxury overflow-hidden group"
+            >
+              <div className="relative aspect-video overflow-hidden bg-muted">
+                {item.image_url ? (
+                  <img
+                    src={item.image_url}
+                    alt={item.name}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Image className="w-8 h-8 text-muted-foreground/20" />
+                  </div>
+                )}
+                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={() => handleDelete(item.id)}
+                    className="p-1.5 bg-black/50 backdrop-blur rounded-lg text-white hover:bg-red-500/80 transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+              <div className="p-3 md:p-4">
+                <h3 className="font-display text-sm md:text-base mb-1">{item.name}</h3>
+                {item.notes && <p className="text-xs text-muted-foreground">{item.notes}</p>}
+              </div>
+            </motion.div>
+          ))}
+        </div>
       )}
     </div>
   );
