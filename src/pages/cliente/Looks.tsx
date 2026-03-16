@@ -15,7 +15,7 @@ export default function ClientLooks() {
   const { data: wardrobeItems } = useWardrobeItems(clientId ?? undefined);
   const [activeFilter, setActiveFilter] = useState("Todos");
 
-  const getPecaName = (id: string) => wardrobeItems?.find(p => p.id === id)?.nome ?? null;
+  const getPecaName = (id: string) => wardrobeItems?.find(p => p.id === id)?.name ?? null;
 
   const looksEstrategista = (looks || []).filter(l => l.criado_por === "estrategista");
   const looksCliente = (looks || []).filter(l => l.criado_por === "cliente");
