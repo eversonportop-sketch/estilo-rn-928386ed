@@ -1,11 +1,12 @@
 import { motion } from "framer-motion";
 import { useState, useRef } from "react";
-import { Upload, Plus, Image, Trash2, Tag, Loader2 } from "lucide-react";
+import { Plus, Image, Trash2, Tag, Loader2 } from "lucide-react";
 import { useClients } from "@/hooks/useClients";
-import { useWardrobeItems, useAddWardrobeItem, useDeleteWardrobeItem } from "@/hooks/useWardrobeItems";
+import { useWardrobeItems, useDeleteWardrobeItem } from "@/hooks/useWardrobeItems";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useQueryClient } from "@tanstack/react-query";
 
 const categories = [
   { value: "cliente", label: "Foto da Cliente" },
@@ -17,11 +18,11 @@ export default function StrategistPhotos() {
   const { data: clients, isLoading: clientsLoading } = useClients();
   const [selectedClient, setSelectedClient] = useState<string>("");
   const { data: items, isLoading: itemsLoading } = useWardrobeItems(selectedClient || undefined);
-  const addItem = useAddWardrobeItem();
   const deleteItem = useDeleteWardrobeItem();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [filter, setFilter] = useState<string>("todos");
+  const qc = useQueryClient();
 
   const filtered = filter === "todos" ? (items || []) : (items || []).filter(p => p.categoria === filter);
   const categoriesFromItems = Array.from(new Set((items || []).map(i => i.categoria))).filter(Boolean);
@@ -43,20 +44,19 @@ export default function StrategistPhotos() {
       const { data: urlData } = supabase.storage.from('wardrobe').getPublicUrl(fileName);
       const nome = file.name.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ");
 
-      await addItem.mutateAsync({
+      const { error: insertError } = await supabase.from("wardrobe_items").insert({
         client_id: selectedClient,
         nome,
         categoria: "Geral",
-        cor: "",
-        ocasiao: "",
-        foto: urlData.publicUrl,
-        criado_por: "estrategista",
+        image_url: urlData.publicUrl,
       });
+      if (insertError) throw insertError;
 
+      qc.invalidateQueries({ queryKey: ["wardrobe_items", selectedClient] });
       toast.success("Foto adicionada com sucesso!");
     } catch (err: any) {
       console.error(err);
-      toast.error("Erro ao enviar foto.");
+      toast.error("Erro ao enviar foto: " + (err.message || ""));
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -70,6 +70,8 @@ export default function StrategistPhotos() {
       onError: (e) => toast.error("Erro: " + e.message),
     });
   };
+
+  const getImageUrl = (item: any) => item.image_url || item.foto || "";
 
   return (
     <div className="p-4 md:p-8 max-w-6xl">
@@ -142,32 +144,35 @@ export default function StrategistPhotos() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              {filtered.map((item, idx) => (
-                <motion.div key={item.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }} className="card-luxury overflow-hidden group">
-                  <div className="relative aspect-video overflow-hidden bg-muted">
-                    {item.foto ? (
-                      <img src={item.foto} alt={item.nome} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Image className="w-8 h-8 text-muted-foreground/20" />
+              {filtered.map((item, idx) => {
+                const imgUrl = getImageUrl(item);
+                return (
+                  <motion.div key={item.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }} className="card-luxury overflow-hidden group">
+                    <div className="relative aspect-video overflow-hidden bg-muted">
+                      {imgUrl ? (
+                        <img src={imgUrl} alt={item.nome} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Image className="w-8 h-8 text-muted-foreground/20" />
+                        </div>
+                      )}
+                      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => handleDelete(item.id)} className="p-1.5 bg-black/50 backdrop-blur rounded-lg text-white hover:bg-red-500/80 transition-colors">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
-                    )}
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => handleDelete(item.id)} className="p-1.5 bg-black/50 backdrop-blur rounded-lg text-white hover:bg-red-500/80 transition-colors">
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
                     </div>
-                  </div>
-                  <div className="p-3 md:p-4">
-                    <h3 className="font-display text-sm md:text-base mb-1">{item.nome}</h3>
-                    <div className="flex items-center gap-1 mb-2">
-                      <Tag className="w-3 h-3 text-gold" />
-                      <span className="text-[10px] text-gold">{item.categoria}</span>
+                    <div className="p-3 md:p-4">
+                      <h3 className="font-display text-sm md:text-base mb-1">{item.nome}</h3>
+                      <div className="flex items-center gap-1 mb-2">
+                        <Tag className="w-3 h-3 text-gold" />
+                        <span className="text-[10px] text-gold">{item.categoria}</span>
+                      </div>
+                      {item.observacao && <p className="text-xs text-muted-foreground">{item.observacao}</p>}
                     </div>
-                    {item.observacao && <p className="text-xs text-muted-foreground">{item.observacao}</p>}
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
             </div>
           )}
         </>
