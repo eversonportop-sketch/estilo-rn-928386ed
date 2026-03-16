@@ -17,8 +17,8 @@ export default function ClientPhotos() {
 
   const [filter, setFilter] = useState("todos");
 
-  const categories = Array.from(new Set((items || []).map(i => i.categoria))).filter(Boolean);
-  const filtered = filter === "todos" ? (items || []) : (items || []).filter(p => p.categoria === filter);
+  const categories = Array.from(new Set((items || []).map(i => i.item_type).filter(Boolean)));
+  const filtered = filter === "todos" ? (items || []) : (items || []).filter(p => p.item_type === filter);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -39,16 +39,14 @@ export default function ClientPhotos() {
         .from('wardrobe')
         .getPublicUrl(fileName);
 
-      const nome = file.name.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ");
+      const name = file.name.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ");
 
       await addItem.mutateAsync({
         client_id: clientId,
-        nome,
-        categoria: "Geral",
-        cor: "",
-        ocasiao: "",
-        foto: urlData.publicUrl,
-        criado_por: "cliente",
+        name,
+        item_type: "Geral",
+        image_url: urlData.publicUrl,
+        created_by_role: "cliente",
       });
 
       toast.success("Foto adicionada com sucesso!");
@@ -120,7 +118,7 @@ export default function ClientPhotos() {
           {categories.map(cat => (
             <button
               key={cat}
-              onClick={() => setFilter(cat)}
+              onClick={() => setFilter(cat!)}
               className={`px-4 py-2 rounded-full text-xs whitespace-nowrap transition-colors ${
                 filter === cat
                   ? "gold-gradient text-primary-foreground"
@@ -150,8 +148,8 @@ export default function ClientPhotos() {
               className="card-luxury overflow-hidden group"
             >
               <div className="relative aspect-video overflow-hidden bg-muted">
-                {item.foto ? (
-                  <img src={item.foto} alt={item.nome} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                {item.image_url ? (
+                  <img src={item.image_url} alt={item.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <Camera className="w-8 h-8 text-muted-foreground/20" />
@@ -159,16 +157,15 @@ export default function ClientPhotos() {
                 )}
               </div>
               <div className="p-3 md:p-4">
-                <h3 className="font-display text-sm md:text-base mb-1">{item.nome}</h3>
+                <h3 className="font-display text-sm md:text-base mb-1">{item.name}</h3>
                 <div className="flex items-center gap-1 mb-2">
                   <Tag className="w-3 h-3 text-gold" />
-                  <span className="text-[10px] text-gold">{item.categoria}</span>
+                  <span className="text-[10px] text-gold">{item.item_type}</span>
                 </div>
                 <div className="flex flex-wrap gap-1">
-                  {item.cor && <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{item.cor}</span>}
-                  {item.ocasiao && <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{item.ocasiao}</span>}
+                  {item.color && <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{item.color}</span>}
                 </div>
-                {item.observacao && <p className="text-xs text-muted-foreground mt-2">{item.observacao}</p>}
+                {item.notes && <p className="text-xs text-muted-foreground mt-2">{item.notes}</p>}
               </div>
             </motion.div>
           ))}
