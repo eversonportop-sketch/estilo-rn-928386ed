@@ -17,8 +17,8 @@ export default function ClientLooks() {
 
   const getPecaName = (id: string) => wardrobeItems?.find(p => p.id === id)?.name ?? null;
 
-  const looksEstrategista = (looks || []).filter(l => l.created_by_role === "estrategista");
-  const looksCliente = (looks || []).filter(l => l.created_by_role === "cliente");
+  const looksEstrategista = (looks || []).filter(l => l.created_by_role === "strategist");
+  const looksCliente = (looks || []).filter(l => l.created_by_role === "client");
   const applyFilter = (list: typeof looks) =>
     activeFilter === "Todos" ? (list || []) : (list || []).filter(l => l.name?.includes(activeFilter));
 
@@ -48,8 +48,8 @@ export default function ClientLooks() {
           })}
         </div>
         {look.strategic_note && <p className="text-xs text-muted-foreground mb-2">{look.strategic_note}</p>}
-        <span className={`text-[10px] px-2 py-0.5 rounded-full ${look.created_by_role === "estrategista" ? "bg-gold/10 text-gold-dark" : "bg-muted text-muted-foreground"}`}>
-          {look.created_by_role === "estrategista" ? "Criado pela estrategista" : "Criado por mim"}
+        <span className={`text-[10px] px-2 py-0.5 rounded-full ${look.created_by_role === "strategist" ? "bg-gold/10 text-gold-dark" : "bg-muted text-muted-foreground"}`}>
+          {look.created_by_role === "strategist" ? "Criado pela estrategista" : "Criado por mim"}
         </span>
       </div>
     </motion.div>

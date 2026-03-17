@@ -62,6 +62,24 @@ export default function LooksGallery() {
       return;
     }
 
+    const payload = editingLook ? {
+      id: editingLook.id,
+      client_id: selectedClient,
+      name: formData.name,
+      strategic_note: formData.strategic_note,
+      pecas: formData.pecas,
+    } : {
+      client_id: selectedClient,
+      consultant_id: consultantId,
+      name: formData.name,
+      strategic_note: formData.strategic_note,
+      pecas: formData.pecas,
+      created_by_role: "strategist" as const,
+      source_type: "manual",
+      occasion_id: null,
+    };
+    console.log("[LooksGallery] Payload para Supabase:", JSON.stringify(payload, null, 2));
+
     if (editingLook) {
       updateLook.mutate(
         {
@@ -87,7 +105,7 @@ export default function LooksGallery() {
           name: formData.name,
           strategic_note: formData.strategic_note,
           pecas: formData.pecas,
-          created_by_role: "consultora",
+          created_by_role: "strategist",
           source_type: "manual",
           occasion_id: null,
         },
@@ -214,7 +232,7 @@ export default function LooksGallery() {
                 </div>
                 {look.strategic_note && <p className="text-xs text-muted-foreground mb-2">{look.strategic_note}</p>}
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-gold/10 text-gold-dark">
-                  {look.created_by_role === "estrategista" ? "Criado pela estrategista" : "Criado pela cliente"}
+                  {look.created_by_role === "strategist" ? "Criado pela estrategista" : "Criado pela cliente"}
                 </span>
               </div>
             </motion.div>
