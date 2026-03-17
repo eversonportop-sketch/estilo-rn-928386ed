@@ -41,10 +41,10 @@ export default function StrategistDashboard() {
   const recentClients = (clients || []).slice(0, 4);
 
   const stats = [
-    { label: "Total de Clientes", value: String(totalClients), icon: Users, change: "" },
-    { label: "Consultorias Ativas", value: String(activeClients), icon: TrendingUp, change: "" },
-    { label: "Peças Cadastradas", value: String(totalItems ?? 0), icon: Shirt, change: "" },
-    { label: "Looks Criados", value: String(totalLooks ?? 0), icon: Image, change: "" },
+    { label: "Total de Clientes", value: String(totalClients), icon: Users },
+    { label: "Consultorias Ativas", value: String(activeClients), icon: TrendingUp },
+    { label: "Peças Cadastradas", value: String(totalItems ?? 0), icon: Shirt },
+    { label: "Looks Criados", value: String(totalLooks ?? 0), icon: Image },
   ];
 
   return (
@@ -87,19 +87,16 @@ export default function StrategistDashboard() {
                     {client.status || "novo"}
                   </span>
                 </div>
-
                 {client.profession && (
                   <p className="text-sm text-muted-foreground mb-2">
                     <span className="text-foreground font-medium">Profissão:</span> {client.profession}
                   </p>
                 )}
-
                 {client.objective && (
                   <p className="text-sm text-muted-foreground mb-4">
                     <span className="text-foreground font-medium">Objetivo:</span> {client.objective}
                   </p>
                 )}
-
                 <div className="flex gap-2 flex-wrap">
                   <Link to={`/estrategista/clientes/${client.id}`} className="text-xs px-4 py-2 rounded-lg border border-border hover:border-gold/40 transition-colors">Ver Perfil</Link>
                 </div>

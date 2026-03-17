@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 import { Plus, Image, Trash2, Loader2 } from "lucide-react";
 import { useClients } from "@/hooks/useClients";
 import { useWardrobeItems, useDeleteWardrobeItem } from "@/hooks/useWardrobeItems";
+import { useConsultantId } from "@/hooks/useConsultantId";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -10,6 +11,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 export default function StrategistPhotos() {
   const { data: clients, isLoading: clientsLoading } = useClients();
+  const { data: consultantId } = useConsultantId();
   const [selectedClient, setSelectedClient] = useState<string>("");
   const { data: items, isLoading: itemsLoading } = useWardrobeItems(selectedClient || undefined);
   const deleteItem = useDeleteWardrobeItem();
@@ -20,6 +22,11 @@ export default function StrategistPhotos() {
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !selectedClient) return;
+
+    if (!consultantId) {
+      toast.error("Erro: consultant_id não encontrado. Faça login novamente.");
+      return;
+    }
 
     setUploading(true);
     try {
@@ -34,10 +41,12 @@ export default function StrategistPhotos() {
 
       const { error: insertError } = await supabase.from("wardrobe_items").insert({
         client_id: selectedClient,
+        consultant_id: consultantId,
         name,
         image_url: urlData.publicUrl,
         created_by_role: "estrategista",
         source_type: "manual",
+        is_active: true,
       });
       if (insertError) throw insertError;
 
