@@ -87,7 +87,7 @@ export default function LooksGallery() {
           name: formData.name,
           strategic_note: formData.strategic_note,
           pecas: formData.pecas,
-          created_by_role: "estrategista",
+          created_by_role: "consultora",
           source_type: "manual",
           occasion_id: null,
         },
