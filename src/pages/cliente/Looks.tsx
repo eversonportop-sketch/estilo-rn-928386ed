@@ -17,10 +17,10 @@ export default function ClientLooks() {
 
   const getPecaName = (id: string) => wardrobeItems?.find(p => p.id === id)?.name ?? null;
 
-  const looksEstrategista = (looks || []).filter(l => l.criado_por === "estrategista");
-  const looksCliente = (looks || []).filter(l => l.criado_por === "cliente");
+  const looksEstrategista = (looks || []).filter(l => l.created_by_role === "estrategista");
+  const looksCliente = (looks || []).filter(l => l.created_by_role === "cliente");
   const applyFilter = (list: typeof looks) =>
-    activeFilter === "Todos" ? (list || []) : (list || []).filter(l => l.ocasiao === activeFilter);
+    activeFilter === "Todos" ? (list || []) : (list || []).filter(l => l.name?.includes(activeFilter));
 
   if (looksLoading) {
     return (
@@ -38,8 +38,8 @@ export default function ClientLooks() {
       </div>
       <div className="p-6">
         <div className="flex justify-between items-start mb-3">
-          <h3 className="font-display text-xl">{look.nome}</h3>
-          <span className="text-xs px-3 py-1 rounded-full bg-gold/10 text-gold-dark">{look.ocasiao}</span>
+          <h3 className="font-display text-xl">{look.name}</h3>
+          <span className="text-xs px-3 py-1 rounded-full bg-gold/10 text-gold-dark">{look.source_type ?? "manual"}</span>
         </div>
         <div className="flex flex-wrap gap-1 mb-3">
           {(look.pecas || []).map((pid: string) => {
@@ -47,9 +47,9 @@ export default function ClientLooks() {
             return name ? <span key={pid} className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{name}</span> : null;
           })}
         </div>
-        {look.observacao && <p className="text-xs text-muted-foreground mb-2">{look.observacao}</p>}
-        <span className={`text-[10px] px-2 py-0.5 rounded-full ${look.criado_por === "estrategista" ? "bg-gold/10 text-gold-dark" : "bg-muted text-muted-foreground"}`}>
-          {look.criado_por === "estrategista" ? "Criado pela estrategista" : "Criado por mim"}
+        {look.strategic_note && <p className="text-xs text-muted-foreground mb-2">{look.strategic_note}</p>}
+        <span className={`text-[10px] px-2 py-0.5 rounded-full ${look.created_by_role === "estrategista" ? "bg-gold/10 text-gold-dark" : "bg-muted text-muted-foreground"}`}>
+          {look.created_by_role === "estrategista" ? "Criado pela estrategista" : "Criado por mim"}
         </span>
       </div>
     </motion.div>
