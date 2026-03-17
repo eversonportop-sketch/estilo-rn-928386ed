@@ -17,10 +17,10 @@ export default function ClientLooks() {
 
   const getPecaName = (id: string) => wardrobeItems?.find(p => p.id === id)?.name ?? null;
 
-  const looksEstrategista = (looks || []).filter(l => l.criado_por === "estrategista");
-  const looksCliente = (looks || []).filter(l => l.criado_por === "cliente");
+  const looksEstrategista = (looks || []).filter(l => l.created_by_role === "estrategista");
+  const looksCliente = (looks || []).filter(l => l.created_by_role === "cliente");
   const applyFilter = (list: typeof looks) =>
-    activeFilter === "Todos" ? (list || []) : (list || []).filter(l => l.ocasiao === activeFilter);
+    activeFilter === "Todos" ? (list || []) : (list || []).filter(l => l.name?.includes(activeFilter));
 
   if (looksLoading) {
     return (
