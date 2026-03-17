@@ -5,6 +5,8 @@ export interface WardrobeItem {
   id: string;
   client_id: string;
   consultant_id?: string;
+  category_id?: string | null;
+  occasion_id?: string | null;
   name: string;
   item_type?: string;
   color?: string;
@@ -61,8 +63,24 @@ export function useDeleteWardrobeItem() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, clientId }: { id: string; clientId: string }) => {
+      // Get item to find storage path
+      const { data: item } = await supabase.from("wardrobe_items").select("image_url").eq("id", id).single();
+
+      // Delete from DB
       const { error } = await supabase.from("wardrobe_items").delete().eq("id", id);
       if (error) throw error;
+
+      // Delete from storage if image exists
+      if (item?.image_url) {
+        try {
+          const url = new URL(item.image_url);
+          const pathMatch = url.pathname.match(/\/storage\/v1\/object\/public\/wardrobe\/(.+)/);
+          if (pathMatch) {
+            await supabase.storage.from("wardrobe").remove([pathMatch[1]]);
+          }
+        } catch (_) { /* ignore storage cleanup errors */ }
+      }
+
       return clientId;
     },
     onSuccess: (clientId) => qc.invalidateQueries({ queryKey: ["wardrobe_items", clientId] }),

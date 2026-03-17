@@ -5,6 +5,7 @@ export interface DbLook {
   id: string;
   client_id: string;
   consultant_id?: string;
+  occasion_id?: string | null;
   name: string;
   strategic_note?: string;
   created_by_role?: string;
@@ -18,6 +19,7 @@ export interface DbLookItem {
   id: string;
   look_id: string;
   wardrobe_item_id: string;
+  sort_order?: number;
 }
 
 export interface LookWithItems extends DbLook {
@@ -60,7 +62,11 @@ export function useAddLook() {
       if (error) throw error;
 
       if (pecas.length > 0) {
-        const items = pecas.map((wardrobe_item_id) => ({ look_id: data.id, wardrobe_item_id }));
+        const items = pecas.map((wardrobe_item_id, idx) => ({
+          look_id: data.id,
+          wardrobe_item_id,
+          sort_order: idx,
+        }));
         const { error: err2 } = await supabase.from("look_items").insert(items);
         if (err2) throw err2;
       }
@@ -86,7 +92,11 @@ export function useUpdateLook() {
       if (pecas) {
         await supabase.from("look_items").delete().eq("look_id", id);
         if (pecas.length > 0) {
-          const items = pecas.map((wardrobe_item_id) => ({ look_id: id, wardrobe_item_id }));
+          const items = pecas.map((wardrobe_item_id, idx) => ({
+            look_id: id,
+            wardrobe_item_id,
+            sort_order: idx,
+          }));
           await supabase.from("look_items").insert(items);
         }
       }
