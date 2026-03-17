@@ -62,6 +62,24 @@ export default function LooksGallery() {
       return;
     }
 
+    const payload = editingLook ? {
+      id: editingLook.id,
+      client_id: selectedClient,
+      name: formData.name,
+      strategic_note: formData.strategic_note,
+      pecas: formData.pecas,
+    } : {
+      client_id: selectedClient,
+      consultant_id: consultantId,
+      name: formData.name,
+      strategic_note: formData.strategic_note,
+      pecas: formData.pecas,
+      created_by_role: "strategist" as const,
+      source_type: "manual",
+      occasion_id: null,
+    };
+    console.log("[LooksGallery] Payload para Supabase:", JSON.stringify(payload, null, 2));
+
     if (editingLook) {
       updateLook.mutate(
         {
