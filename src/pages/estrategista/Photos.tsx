@@ -44,7 +44,7 @@ export default function StrategistPhotos() {
         consultant_id: consultantId,
         name,
         image_url: urlData.publicUrl,
-        created_by_role: "estrategista",
+        created_by_role: "consultora",
         source_type: "manual",
         is_active: true,
       });
