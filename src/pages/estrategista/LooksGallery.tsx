@@ -232,7 +232,7 @@ export default function LooksGallery() {
                 </div>
                 {look.strategic_note && <p className="text-xs text-muted-foreground mb-2">{look.strategic_note}</p>}
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-gold/10 text-gold-dark">
-                  {look.created_by_role === "estrategista" ? "Criado pela estrategista" : "Criado pela cliente"}
+                  {look.created_by_role === "strategist" ? "Criado pela estrategista" : "Criado pela cliente"}
                 </span>
               </div>
             </motion.div>
