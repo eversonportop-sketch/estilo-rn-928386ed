@@ -17,8 +17,8 @@ export default function ClientLooks() {
 
   const getPecaName = (id: string) => wardrobeItems?.find(p => p.id === id)?.name ?? null;
 
-  const looksEstrategista = (looks || []).filter(l => l.created_by_role === "estrategista");
-  const looksCliente = (looks || []).filter(l => l.created_by_role === "cliente");
+  const looksEstrategista = (looks || []).filter(l => l.created_by_role === "strategist");
+  const looksCliente = (looks || []).filter(l => l.created_by_role === "client");
   const applyFilter = (list: typeof looks) =>
     activeFilter === "Todos" ? (list || []) : (list || []).filter(l => l.name?.includes(activeFilter));
 
