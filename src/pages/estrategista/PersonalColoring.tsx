@@ -21,7 +21,7 @@ type ClientColorPaletteRecord = {
 
 type PaletteOption = {
   id: string;
-  slug: string | null;
+  seasonType: string | null;
   name: string;
   description: string;
   colors: string[];
@@ -58,7 +58,7 @@ function normalizePalette(row: Record<string, unknown>): PaletteOption | null {
 
   return {
     id,
-    slug: typeof row.slug === "string" ? row.slug : null,
+    seasonType: typeof row.season_type === "string" ? row.season_type : null,
     name: typeof row.name === "string" && row.name.trim() ? row.name : "Paleta sem nome",
     description: typeof row.description === "string" ? row.description : "",
     colors: normalizePaletteColors(row.color_palette_colors),
@@ -83,12 +83,14 @@ async function fetchPaletteOptions(): Promise<PaletteOption[]> {
     .select(
       `
         id,
-        slug,
         name,
         description,
+        season_type,
+        consultant_id,
         color_palette_colors ( hex )
       `,
     )
+    .eq("is_active", true)
     .order("name");
 
   if (error) throw error;
