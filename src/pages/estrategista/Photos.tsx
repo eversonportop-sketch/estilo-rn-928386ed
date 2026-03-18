@@ -115,7 +115,7 @@ export default function StrategistPhotos() {
         <div className="text-center py-16 text-muted-foreground">
           <Image className="w-12 h-12 mx-auto mb-4 opacity-20" />
           <p className="font-display text-xl mb-2">Selecione uma cliente</p>
-          <p className="text-sm">Escolha uma cliente para ver suas fotos e referências.</p>
+          <p className="text-sm">Escolha uma cliente para ver inspirações de looks.</p>
         </div>
       ) : itemsLoading ? (
         <div className="flex items-center justify-center py-20 gap-2 text-muted-foreground">

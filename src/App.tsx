@@ -76,7 +76,7 @@ const App = () => (
               <Route path="coloracao" element={<ClientPersonalColoring />} />
               <Route path="morfologia" element={<ClientMorphology />} />
               <Route path="elementos" element={<ClientDesignElements />} />
-              <Route path="looks" element={<ClientLooks />} />
+              
               <Route path="fotos" element={<ClientPhotos />} />
               <Route path="assistente" element={<ClientAssistant />} />
             </Route>

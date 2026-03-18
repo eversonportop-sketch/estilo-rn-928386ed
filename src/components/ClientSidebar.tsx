@@ -15,8 +15,7 @@ const menuItems = [
   { title: "Minha Coloração Pessoal", url: "/cliente/coloracao", icon: Palette },
   { title: "Minha Morfologia", url: "/cliente/morfologia", icon: Scan },
   { title: "Meus Elementos de Design", url: "/cliente/elementos", icon: Shapes },
-  { title: "Meus Looks", url: "/cliente/looks", icon: Image },
-  { title: "Minhas Fotos", url: "/cliente/fotos", icon: Camera },
+  { title: "Minhas Inspirações de Looks", url: "/cliente/fotos", icon: Camera },
   { title: "Assistente de Looks", url: "/cliente/assistente", icon: Sparkles },
 ];
 
