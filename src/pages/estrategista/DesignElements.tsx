@@ -69,8 +69,6 @@ export default function DesignElements() {
   const fields = [
     { key: "lines", label: "Linhas" },
     { key: "shapes", label: "Formas" },
-    { key: "scale", label: "Escala" },
-    { key: "contrast", label: "Contraste" },
     { key: "textures", label: "Texturas" },
     { key: "fabrics", label: "Tecidos" },
     { key: "prints", label: "Estampas" },

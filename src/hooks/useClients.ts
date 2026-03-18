@@ -117,7 +117,27 @@ export function useUpdateClient() {
       if (error) throw error;
       return data as Client;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["clients"] }),
+    onMutate: async ({ id, ...updates }) => {
+      await qc.cancelQueries({ queryKey: ["clients"] });
+      const previousClients = qc.getQueryData<Client[]>(["clients"]);
+
+      qc.setQueryData<Client[]>(["clients"], (current = []) =>
+        current.map((client) => (client.id === id ? { ...client, ...updates } : client)),
+      );
+
+      return { previousClients };
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previousClients) {
+        qc.setQueryData(["clients"], context.previousClients);
+      }
+    },
+    onSuccess: (data) => {
+      qc.setQueryData<Client[]>(["clients"], (current = []) =>
+        current.map((client) => (client.id === data.id ? data : client)),
+      );
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["clients"] }),
   });
 }
 

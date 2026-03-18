@@ -169,7 +169,7 @@ export default function ClientsPage() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-20 text-muted-foreground">
-          <p>Nenhuma cliente encontrada.</p>
+          <p>Nenhum cliente encontrado.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
