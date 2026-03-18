@@ -41,7 +41,7 @@ function normalizePaletteColors(value: unknown): string[] {
       if (typeof item === "string") return item.trim();
       if (item && typeof item === "object") {
         const record = item as Record<string, unknown>;
-        const candidate = [record.hex, record.color_hex, record.color, record.value].find(
+        const candidate = [record.hex_code, record.hex, record.color_hex, record.color, record.value].find(
           (entry): entry is string => typeof entry === "string" && entry.trim().length > 0,
         );
         return candidate?.trim() ?? "";
@@ -87,7 +87,7 @@ async function fetchPaletteOptions(): Promise<PaletteOption[]> {
         description,
         season_type,
         consultant_id,
-        color_palette_colors ( hex )
+        color_palette_colors ( hex_code )
       `,
     )
     .eq("is_active", true)
