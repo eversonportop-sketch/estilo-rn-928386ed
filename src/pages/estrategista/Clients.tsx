@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Search, Plus, Eye, Edit, Trash2, Loader2, X } from "lucide-react";
+import { Search, Plus, Eye, Edit, Trash2, Loader2, X, ChevronDown, CircleDot, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useClients, useCreateClient, useUpdateClient, useDeleteClient } from "@/hooks/useClients";
@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const statusFilters = ["Todos", "Ativo", "Concluído"];
 

@@ -14,8 +14,6 @@ export default function DesignElements() {
   const [form, setForm] = useState({
     lines: "",
     shapes: "",
-    scale: "",
-    contrast: "",
     textures: "",
     fabrics: "",
     prints: "",
