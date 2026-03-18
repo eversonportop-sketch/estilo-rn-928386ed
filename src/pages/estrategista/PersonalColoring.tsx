@@ -336,8 +336,8 @@ export default function PersonalColoring() {
                         <div className="flex items-start justify-between mb-3 gap-3">
                           <div>
                             <span className="font-medium block">{palette.name}</span>
-                            {palette.slug && (
-                              <span className="text-xs text-muted-foreground">{palette.slug}</span>
+                            {palette.seasonType && (
+                              <span className="text-xs text-muted-foreground">{palette.seasonType}</span>
                             )}
                           </div>
 
