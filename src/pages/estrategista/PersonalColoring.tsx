@@ -91,7 +91,7 @@ async function fetchPaletteOptions(): Promise<PaletteOption[]> {
       `,
     )
     .eq("is_active", true)
-    .order("name");
+    .order("name", { ascending: true });
 
   if (error) throw error;
 
