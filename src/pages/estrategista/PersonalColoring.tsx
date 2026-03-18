@@ -78,25 +78,43 @@ function buildPaletteDraft(palette: PaletteOption): PaletteDraft {
 }
 
 async function fetchPaletteOptions(): Promise<PaletteOption[]> {
-  const { data, error } = await supabase
+  const { data: paletteRows, error: paletteError } = await supabase
     .from("color_palettes")
-    .select(
-      `
-        id,
-        name,
-        description,
-        season_type,
-        consultant_id,
-        color_palette_colors ( hex_code )
-      `,
-    )
+    .select("id, name, description, season_type, consultant_id")
     .eq("is_active", true)
     .order("name", { ascending: true });
 
-  if (error) throw error;
+  if (paletteError) throw paletteError;
 
-  return (data ?? [])
-    .map((row) => normalizePalette(row as Record<string, unknown>))
+  const paletteIds = (paletteRows ?? [])
+    .map((row) => (typeof row.id === "string" ? row.id : null))
+    .filter((id): id is string => Boolean(id));
+
+  const colorsByPalette = new Map<string, string[]>();
+
+  if (paletteIds.length > 0) {
+    const { data: colorRows, error: colorError } = await supabase
+      .from("color_palette_colors")
+      .select("palette_id, hex_code")
+      .in("palette_id", paletteIds);
+
+    if (colorError) throw colorError;
+
+    (colorRows ?? []).forEach((row) => {
+      if (typeof row.palette_id !== "string" || typeof row.hex_code !== "string") return;
+      const currentColors = colorsByPalette.get(row.palette_id) ?? [];
+      if (currentColors.length < 5) currentColors.push(row.hex_code.trim());
+      colorsByPalette.set(row.palette_id, currentColors);
+    });
+  }
+
+  return (paletteRows ?? [])
+    .map((row) =>
+      normalizePalette({
+        ...(row as Record<string, unknown>),
+        color_palette_colors: colorsByPalette.get(row.id as string) ?? [],
+      }),
+    )
     .filter((palette): palette is PaletteOption => Boolean(palette));
 }
 
