@@ -36,7 +36,7 @@ import ClientStyleIdentity from "./pages/cliente/StyleIdentity";
 import ClientPersonalColoring from "./pages/cliente/PersonalColoring";
 import ClientMorphology from "./pages/cliente/Morphology";
 import ClientDesignElements from "./pages/cliente/DesignElements";
-import ClientLooks from "./pages/cliente/Looks";
+
 import ClientPhotos from "./pages/cliente/Photos";
 
 const queryClient = new QueryClient();
