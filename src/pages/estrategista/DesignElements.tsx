@@ -31,8 +31,6 @@ export default function DesignElements() {
       setForm({
         lines: elements.lines || "",
         shapes: elements.shapes || "",
-        scale: elements.scale || "",
-        contrast: elements.contrast || "",
         textures: elements.textures || "",
         fabrics: elements.fabrics || "",
         prints: elements.prints || "",
@@ -44,8 +42,6 @@ export default function DesignElements() {
       setForm({
         lines: "",
         shapes: "",
-        scale: "",
-        contrast: "",
         textures: "",
         fabrics: "",
         prints: "",
