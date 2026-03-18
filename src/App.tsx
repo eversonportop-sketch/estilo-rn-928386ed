@@ -61,7 +61,7 @@ const App = () => (
               <Route path="coloracao" element={<StrategistPersonalColoring />} />
               <Route path="morfologia" element={<StrategistMorphology />} />
               <Route path="elementos" element={<StrategistDesignElements />} />
-              <Route path="looks" element={<LooksGallery />} />
+              
               <Route path="assistente" element={<StyleAssistant />} />
               <Route path="estrutura" element={<ConsultingStructure />} />
               <Route path="fotos" element={<StrategistPhotos />} />
