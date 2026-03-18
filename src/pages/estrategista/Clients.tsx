@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Search, Plus, Eye, Edit, Trash2, Loader2, X } from "lucide-react";
+import { Search, Plus, Eye, Edit, Trash2, Loader2, X, ChevronDown, CircleDot, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useClients, useCreateClient, useUpdateClient, useDeleteClient } from "@/hooks/useClients";
@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const statusFilters = ["Todos", "Ativo", "Concluído"];
 
@@ -17,6 +18,7 @@ export default function ClientsPage() {
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [statusUpdatingId, setStatusUpdatingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
 
   const { user } = useAuth();
@@ -102,7 +104,35 @@ export default function ClientsPage() {
     });
   };
 
+  const handleStatusChange = (id: string, status: "ativo" | "concluído") => {
+    setStatusUpdatingId(id);
+    updateClient.mutate(
+      { id, status },
+      {
+        onSuccess: () => toast.success(`Status atualizado para ${status === "ativo" ? "Ativo" : "Concluído"}.`),
+        onError: (e) => toast.error("Erro ao atualizar status: " + e.message),
+        onSettled: () => setStatusUpdatingId(null),
+      },
+    );
+  };
+
   const isSaving = createClient.isPending || updateClient.isPending;
+
+  const getStatusMeta = (status?: string) => {
+    const normalizedStatus = status === "concluído" ? "concluído" : "ativo";
+
+    return normalizedStatus === "concluído"
+      ? {
+          label: "Concluído",
+          icon: CheckCircle2,
+          badgeClassName: "bg-secondary text-secondary-foreground",
+        }
+      : {
+          label: "Ativo",
+          icon: CircleDot,
+          badgeClassName: "bg-primary/10 text-primary",
+        };
+  };
 
   return (
     <div className="p-8 lg:p-12 max-w-7xl">
@@ -139,49 +169,72 @@ export default function ClientsPage() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-20 text-muted-foreground">
-          <p>Nenhuma cliente encontrada.</p>
+          <p>Nenhum cliente encontrado.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map((client, i) => (
-            <motion.div key={client.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: i * 0.05 }} className="card-luxury p-6">
-              <div className="flex justify-between items-start mb-3">
-                <div>
-                  <h3 className="font-display text-lg">{client.name}</h3>
-                  <p className="text-xs text-muted-foreground">{client.email}</p>
-                </div>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${(client.status || "ativo") === "concluído" ? "bg-green-100 text-green-700" : "bg-gold/10 text-gold-dark"}`}>
-                  {(client.status || "ativo") === "concluído" ? "Concluído" : "Ativo"}
-                </span>
-              </div>
-              <div className="text-sm space-y-1 mb-4">
-                {client.profession && <p><span className="text-muted-foreground">Profissão:</span> {client.profession}</p>}
-                {client.objective && <p><span className="text-muted-foreground">Objetivo:</span> {client.objective}</p>}
-              </div>
-              {client.progress != null && (
-                <div className="mb-4">
-                  <div className="flex justify-between text-xs mb-1">
-                    <span className="text-muted-foreground">Progresso</span>
-                    <span className="text-gold-dark font-medium">{client.progress}%</span>
+          {filtered.map((client, i) => {
+            const statusMeta = getStatusMeta(client.status);
+            const StatusIcon = statusMeta.icon;
+
+            return (
+              <motion.div key={client.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: i * 0.05 }} className="card-luxury p-6">
+                <div className="flex justify-between items-start mb-3 gap-3">
+                  <div>
+                    <h3 className="font-display text-lg">{client.name}</h3>
+                    <p className="text-xs text-muted-foreground">{client.email}</p>
                   </div>
-                  <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full gold-gradient rounded-full transition-all duration-500" style={{ width: `${client.progress}%` }} />
-                  </div>
+                  <span className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full ${statusMeta.badgeClassName}`}>
+                    <StatusIcon className="w-3.5 h-3.5" />
+                    {statusMeta.label}
+                  </span>
                 </div>
-              )}
-              <div className="flex gap-2 pt-2 border-t border-border">
-                <Link to={`/estrategista/clientes/${client.id}`} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-gold transition-colors">
-                  <Eye className="w-3.5 h-3.5" /> Ver
-                </Link>
-                <button onClick={() => openEdit(client)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-gold transition-colors">
-                  <Edit className="w-3.5 h-3.5" /> Editar
-                </button>
-                <button onClick={() => handleDelete(client.id)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-red-400 transition-colors ml-auto">
-                  <Trash2 className="w-3.5 h-3.5" /> Excluir
-                </button>
-              </div>
-            </motion.div>
-          ))}
+                <div className="text-sm space-y-1 mb-4">
+                  {client.profession && <p><span className="text-muted-foreground">Profissão:</span> {client.profession}</p>}
+                  {client.objective && <p><span className="text-muted-foreground">Objetivo:</span> {client.objective}</p>}
+                </div>
+                {client.progress != null && (
+                  <div className="mb-4">
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-muted-foreground">Progresso</span>
+                      <span className="text-gold-dark font-medium">{client.progress}%</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full gold-gradient rounded-full transition-all duration-500" style={{ width: `${client.progress}%` }} />
+                    </div>
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
+                  <Link to={`/estrategista/clientes/${client.id}`} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-gold transition-colors">
+                    <Eye className="w-3.5 h-3.5" /> Ver
+                  </Link>
+                  <button onClick={() => openEdit(client)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-gold transition-colors">
+                    <Edit className="w-3.5 h-3.5" /> Editar
+                  </button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        disabled={statusUpdatingId === client.id}
+                        className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                      >
+                        {statusUpdatingId === client.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <StatusIcon className="w-3.5 h-3.5" />}
+                        {statusMeta.label}
+                        <ChevronDown className="w-3.5 h-3.5" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-40">
+                      <DropdownMenuItem onClick={() => handleStatusChange(client.id, "ativo")}>Ativo</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleStatusChange(client.id, "concluído")}>Concluído</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <button onClick={() => handleDelete(client.id)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors ml-auto">
+                    <Trash2 className="w-3.5 h-3.5" /> Excluir
+                  </button>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       )}
 
