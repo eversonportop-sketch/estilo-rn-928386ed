@@ -18,6 +18,7 @@ export default function ClientsPage() {
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [statusUpdatingId, setStatusUpdatingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
 
   const { user } = useAuth();
