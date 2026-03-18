@@ -22,7 +22,7 @@ import StrategistStyleIdentity from "./pages/estrategista/StyleIdentity";
 import StrategistPersonalColoring from "./pages/estrategista/PersonalColoring";
 import StrategistMorphology from "./pages/estrategista/Morphology";
 import StrategistDesignElements from "./pages/estrategista/DesignElements";
-import LooksGallery from "./pages/estrategista/LooksGallery";
+
 import StyleAssistant from "./pages/estrategista/StyleAssistant";
 import ConsultingStructure from "./pages/estrategista/ConsultingStructure";
 import StrategistPhotos from "./pages/estrategista/Photos";
