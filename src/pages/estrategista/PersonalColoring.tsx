@@ -194,7 +194,7 @@ export default function PersonalColoring() {
       if (deleteError) throw deleteError;
 
       const { error: insertError } = await supabase.from("color_palette_colors").insert(
-        validColors.map((hex) => ({ palette_id: paletteId, hex })),
+        validColors.map((hex) => ({ palette_id: paletteId, hex_code: hex })),
       );
 
       if (insertError) throw insertError;
