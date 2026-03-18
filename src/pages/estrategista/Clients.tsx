@@ -173,70 +173,68 @@ export default function ClientsPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map((client, i) => (
-            <motion.div key={client.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: i * 0.05 }} className="card-luxury p-6">
-              <div className="flex justify-between items-start mb-3 gap-3">
-                <div>
-                  <h3 className="font-display text-lg">{client.name}</h3>
-                  <p className="text-xs text-muted-foreground">{client.email}</p>
-                </div>
-                {(() => {
-                  const statusMeta = getStatusMeta(client.status);
-                  const StatusIcon = statusMeta.icon;
+          {filtered.map((client, i) => {
+            const statusMeta = getStatusMeta(client.status);
+            const StatusIcon = statusMeta.icon;
 
-                  return (
-                    <span className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full ${statusMeta.badgeClassName}`}>
-                      <StatusIcon className="w-3.5 h-3.5" />
-                      {statusMeta.label}
-                    </span>
-                  );
-                })()}
-              </div>
-              <div className="text-sm space-y-1 mb-4">
-                {client.profession && <p><span className="text-muted-foreground">Profissão:</span> {client.profession}</p>}
-                {client.objective && <p><span className="text-muted-foreground">Objetivo:</span> {client.objective}</p>}
-              </div>
-              {client.progress != null && (
-                <div className="mb-4">
-                  <div className="flex justify-between text-xs mb-1">
-                    <span className="text-muted-foreground">Progresso</span>
-                    <span className="text-gold-dark font-medium">{client.progress}%</span>
+            return (
+              <motion.div key={client.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: i * 0.05 }} className="card-luxury p-6">
+                <div className="flex justify-between items-start mb-3 gap-3">
+                  <div>
+                    <h3 className="font-display text-lg">{client.name}</h3>
+                    <p className="text-xs text-muted-foreground">{client.email}</p>
                   </div>
-                  <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full gold-gradient rounded-full transition-all duration-500" style={{ width: `${client.progress}%` }} />
-                  </div>
+                  <span className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full ${statusMeta.badgeClassName}`}>
+                    <StatusIcon className="w-3.5 h-3.5" />
+                    {statusMeta.label}
+                  </span>
                 </div>
-              )}
-              <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
-                <Link to={`/estrategista/clientes/${client.id}`} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-gold transition-colors">
-                  <Eye className="w-3.5 h-3.5" /> Ver
-                </Link>
-                <button onClick={() => openEdit(client)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-gold transition-colors">
-                  <Edit className="w-3.5 h-3.5" /> Editar
-                </button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      type="button"
-                      disabled={statusUpdatingId === client.id}
-                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
-                    >
-                      {statusUpdatingId === client.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <getStatusMeta(client.status).icon className="w-3.5 h-3.5" />}
-                      {getStatusMeta(client.status).label}
-                      <ChevronDown className="w-3.5 h-3.5" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-40">
-                    <DropdownMenuItem onClick={() => handleStatusChange(client.id, "ativo")}>Ativo</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleStatusChange(client.id, "concluído")}>Concluído</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <button onClick={() => handleDelete(client.id)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors ml-auto">
-                  <Trash2 className="w-3.5 h-3.5" /> Excluir
-                </button>
-              </div>
-            </motion.div>
-          ))}
+                <div className="text-sm space-y-1 mb-4">
+                  {client.profession && <p><span className="text-muted-foreground">Profissão:</span> {client.profession}</p>}
+                  {client.objective && <p><span className="text-muted-foreground">Objetivo:</span> {client.objective}</p>}
+                </div>
+                {client.progress != null && (
+                  <div className="mb-4">
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-muted-foreground">Progresso</span>
+                      <span className="text-gold-dark font-medium">{client.progress}%</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full gold-gradient rounded-full transition-all duration-500" style={{ width: `${client.progress}%` }} />
+                    </div>
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
+                  <Link to={`/estrategista/clientes/${client.id}`} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-gold transition-colors">
+                    <Eye className="w-3.5 h-3.5" /> Ver
+                  </Link>
+                  <button onClick={() => openEdit(client)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-gold transition-colors">
+                    <Edit className="w-3.5 h-3.5" /> Editar
+                  </button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        disabled={statusUpdatingId === client.id}
+                        className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                      >
+                        {statusUpdatingId === client.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <StatusIcon className="w-3.5 h-3.5" />}
+                        {statusMeta.label}
+                        <ChevronDown className="w-3.5 h-3.5" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-40">
+                      <DropdownMenuItem onClick={() => handleStatusChange(client.id, "ativo")}>Ativo</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleStatusChange(client.id, "concluído")}>Concluído</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <button onClick={() => handleDelete(client.id)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors ml-auto">
+                    <Trash2 className="w-3.5 h-3.5" /> Excluir
+                  </button>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       )}
 
