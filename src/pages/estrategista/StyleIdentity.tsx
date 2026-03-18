@@ -3,13 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Sparkles, Save, Check, Loader2 } from "lucide-react";
+import { User, Sparkles, Save, Check, Loader2, Pencil, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useClients } from "@/hooks/useClients";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface StyleProfile {
   id: string;
@@ -17,6 +18,11 @@ interface StyleProfile {
   slug: string;
   description: string | null;
 }
+
+type StyleDraft = {
+  name: string;
+  description: string;
+};
 
 function useStyleProfiles() {
   return useQuery({
@@ -50,6 +56,9 @@ export default function StyleIdentity() {
   const [secondaryStyles, setSecondaryStyles] = useState<string[]>([]);
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [editingStyleId, setEditingStyleId] = useState<string | null>(null);
+  const [styleDraft, setStyleDraft] = useState<StyleDraft>({ name: "", description: "" });
+  const [savingStyleId, setSavingStyleId] = useState<string | null>(null);
 
   const { data: clients, isLoading: loadingClients } = useClients();
   const { data: styleProfiles, isLoading: loadingStyles } = useStyleProfiles();
@@ -76,9 +85,44 @@ export default function StyleIdentity() {
       prev.includes(styleId)
         ? prev.filter((s) => s !== styleId)
         : prev.length < 2
-        ? [...prev, styleId]
-        : prev
+          ? [...prev, styleId]
+          : prev,
     );
+  };
+
+  const startEditingStyle = (style: StyleProfile) => {
+    setEditingStyleId(style.id);
+    setStyleDraft({ name: style.name, description: style.description ?? "" });
+  };
+
+  const stopEditingStyle = () => {
+    setEditingStyleId(null);
+    setStyleDraft({ name: "", description: "" });
+  };
+
+  const handleStyleDefinitionSave = async (styleId: string) => {
+    if (!styleDraft.name.trim()) {
+      toast.error("Informe o nome do estilo.");
+      return;
+    }
+
+    setSavingStyleId(styleId);
+    try {
+      const { error } = await supabase
+        .from("style_profiles")
+        .update({ name: styleDraft.name.trim(), description: styleDraft.description.trim() || null })
+        .eq("id", styleId);
+
+      if (error) throw error;
+
+      await qc.invalidateQueries({ queryKey: ["style_profiles"] });
+      toast.success("Estilo atualizado com sucesso!");
+      stopEditingStyle();
+    } catch (error: any) {
+      toast.error("Erro: " + error.message);
+    } finally {
+      setSavingStyleId(null);
+    }
   };
 
   const handleSave = async () => {
@@ -93,15 +137,12 @@ export default function StyleIdentity() {
 
     setSaving(true);
     try {
-      // Delete existing profiles for this client
       await supabase.from("client_style_profiles").delete().eq("client_id", selectedClient);
 
-      // Insert predominant
       const rows: { client_id: string; style_profile_id: string; profile_type: string; notes: string | null }[] = [
         { client_id: selectedClient, style_profile_id: predominantStyle, profile_type: "predominante", notes: notes || null },
       ];
 
-      // Insert secondaries
       for (const sid of secondaryStyles) {
         rows.push({ client_id: selectedClient, style_profile_id: sid, profile_type: "secundário", notes: null });
       }
@@ -119,6 +160,85 @@ export default function StyleIdentity() {
   };
 
   const styles = styleProfiles || [];
+
+  const renderStyleCard = (style: StyleProfile, selected: boolean, onSelect: () => void, accent: "primary" | "secondary") => {
+    const isEditing = editingStyleId === style.id;
+    const isSavingDefinition = savingStyleId === style.id;
+
+    return (
+      <div
+        key={style.id}
+        onClick={() => !isEditing && onSelect()}
+        className={cn(
+          "p-4 rounded-xl border-2 transition-all duration-200",
+          isEditing ? "border-primary bg-primary/5" : "cursor-pointer",
+          selected
+            ? accent === "primary"
+              ? "border-primary bg-primary/10"
+              : "border-secondary bg-secondary/10"
+            : accent === "primary"
+              ? "border-border hover:border-primary/50"
+              : "border-border hover:border-secondary/50",
+        )}
+      >
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <span className="font-medium text-sm">{style.name}</span>
+          <div className="flex items-center gap-1 shrink-0">
+            {!isEditing && selected && (
+              <Check className={cn("w-4 h-4", accent === "primary" ? "text-primary" : "text-secondary-foreground")} />
+            )}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={(event) => {
+                event.stopPropagation();
+                isEditing ? stopEditingStyle() : startEditingStyle(style);
+              }}
+            >
+              {isEditing ? <X className="w-4 h-4" /> : <Pencil className="w-4 h-4" />}
+            </Button>
+          </div>
+        </div>
+
+        {isEditing ? (
+          <div className="space-y-3" onClick={(event) => event.stopPropagation()}>
+            <div className="space-y-2">
+              <Label htmlFor={`style-name-${style.id}`}>Nome</Label>
+              <Input
+                id={`style-name-${style.id}`}
+                value={styleDraft.name}
+                onChange={(event) => setStyleDraft((current) => ({ ...current, name: event.target.value }))}
+                placeholder="Nome do estilo"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor={`style-description-${style.id}`}>Descrição</Label>
+              <Textarea
+                id={`style-description-${style.id}`}
+                value={styleDraft.description}
+                onChange={(event) => setStyleDraft((current) => ({ ...current, description: event.target.value }))}
+                rows={3}
+                placeholder="Descreva este estilo"
+              />
+            </div>
+            <div className="flex flex-wrap gap-2 pt-1">
+              <Button type="button" onClick={() => handleStyleDefinitionSave(style.id)} disabled={isSavingDefinition}>
+                {isSavingDefinition ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                Salvar card
+              </Button>
+              <Button type="button" variant="outline" onClick={stopEditingStyle}>
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <p className="text-xs text-muted-foreground line-clamp-3">{style.description || "Sem descrição cadastrada."}</p>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6 md:space-y-8">
@@ -177,31 +297,17 @@ export default function StyleIdentity() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                    {styles.map((style) => (
-                      <button
-                        key={style.id}
-                        onClick={() => {
+                    {styles.map((style) =>
+                      renderStyleCard(
+                        style,
+                        predominantStyle === style.id,
+                        () => {
                           setPredominantStyle(style.id);
                           setSecondaryStyles((prev) => prev.filter((s) => s !== style.id));
-                        }}
-                        className={cn(
-                          "p-4 rounded-xl border-2 transition-all duration-200 text-left",
-                          predominantStyle === style.id
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-primary/50"
-                        )}
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-medium text-sm">{style.name}</span>
-                          {predominantStyle === style.id && (
-                            <Check className="w-4 h-4 text-primary" />
-                          )}
-                        </div>
-                        <p className="text-xs text-muted-foreground line-clamp-2">
-                          {style.description}
-                        </p>
-                      </button>
-                    ))}
+                        },
+                        "primary",
+                      ),
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -214,28 +320,14 @@ export default function StyleIdentity() {
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                     {styles
                       .filter((s) => s.id !== predominantStyle)
-                      .map((style) => (
-                        <button
-                          key={style.id}
-                          onClick={() => toggleSecondaryStyle(style.id)}
-                          className={cn(
-                            "p-4 rounded-xl border-2 transition-all duration-200 text-left",
-                            secondaryStyles.includes(style.id)
-                              ? "border-secondary bg-secondary/10"
-                              : "border-border hover:border-secondary/50"
-                          )}
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="font-medium text-sm">{style.name}</span>
-                            {secondaryStyles.includes(style.id) && (
-                              <Check className="w-4 h-4 text-secondary-foreground" />
-                            )}
-                          </div>
-                          <p className="text-xs text-muted-foreground line-clamp-2">
-                            {style.description}
-                          </p>
-                        </button>
-                      ))}
+                      .map((style) =>
+                        renderStyleCard(
+                          style,
+                          secondaryStyles.includes(style.id),
+                          () => toggleSecondaryStyle(style.id),
+                          "secondary",
+                        ),
+                      )}
                   </div>
                 </CardContent>
               </Card>
