@@ -118,6 +118,22 @@ export default function ClientsPage() {
 
   const isSaving = createClient.isPending || updateClient.isPending;
 
+  const getStatusMeta = (status?: string) => {
+    const normalizedStatus = status === "concluído" ? "concluído" : "ativo";
+
+    return normalizedStatus === "concluído"
+      ? {
+          label: "Concluído",
+          icon: CheckCircle2,
+          badgeClassName: "bg-secondary text-secondary-foreground",
+        }
+      : {
+          label: "Ativo",
+          icon: CircleDot,
+          badgeClassName: "bg-primary/10 text-primary",
+        };
+  };
+
   return (
     <div className="p-8 lg:p-12 max-w-7xl">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex justify-between items-start mb-10">
