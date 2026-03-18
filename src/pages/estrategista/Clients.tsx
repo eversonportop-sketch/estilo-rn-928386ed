@@ -104,6 +104,18 @@ export default function ClientsPage() {
     });
   };
 
+  const handleStatusChange = (id: string, status: "ativo" | "concluído") => {
+    setStatusUpdatingId(id);
+    updateClient.mutate(
+      { id, status },
+      {
+        onSuccess: () => toast.success(`Status atualizado para ${status === "ativo" ? "Ativo" : "Concluído"}.`),
+        onError: (e) => toast.error("Erro ao atualizar status: " + e.message),
+        onSettled: () => setStatusUpdatingId(null),
+      },
+    );
+  };
+
   const isSaving = createClient.isPending || updateClient.isPending;
 
   return (
