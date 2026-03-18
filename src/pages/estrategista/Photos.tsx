@@ -76,8 +76,8 @@ export default function StrategistPhotos() {
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 md:mb-10">
           <div>
-            <h1 className="text-2xl md:text-4xl font-display font-light mb-1">Fotos e Referências</h1>
-            <p className="text-muted-foreground text-xs md:text-sm">Galeria de imagens e referências visuais</p>
+            <h1 className="text-2xl md:text-4xl font-display font-light mb-1">Inspirações de Looks</h1>
+            <p className="text-muted-foreground text-xs md:text-sm">Galeria de inspirações e referências visuais</p>
           </div>
           {selectedClient && (
             <div>
@@ -115,7 +115,7 @@ export default function StrategistPhotos() {
         <div className="text-center py-16 text-muted-foreground">
           <Image className="w-12 h-12 mx-auto mb-4 opacity-20" />
           <p className="font-display text-xl mb-2">Selecione uma cliente</p>
-          <p className="text-sm">Escolha uma cliente para ver suas fotos e referências.</p>
+          <p className="text-sm">Escolha uma cliente para ver inspirações de looks.</p>
         </div>
       ) : itemsLoading ? (
         <div className="flex items-center justify-center py-20 gap-2 text-muted-foreground">

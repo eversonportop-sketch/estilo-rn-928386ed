@@ -15,8 +15,7 @@ const menuItems = [
   { title: "Coloração Pessoal", url: "/estrategista/coloracao", icon: Palette },
   { title: "Morfologia", url: "/estrategista/morfologia", icon: Scan },
   { title: "Elementos de Design", url: "/estrategista/elementos", icon: Shapes },
-  { title: "Composições Estratégicas de Looks", url: "/estrategista/looks", icon: Image },
-  { title: "Fotos e Referências", url: "/estrategista/fotos", icon: Camera },
+  { title: "Inspirações de Looks", url: "/estrategista/fotos", icon: Camera },
   { title: "Assistente de Looks", url: "/estrategista/assistente", icon: Sparkles },
   { title: "Estrutura da Consultoria", url: "/estrategista/estrutura", icon: Settings },
 ];
