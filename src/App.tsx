@@ -22,7 +22,6 @@ import StrategistStyleIdentity from "./pages/estrategista/StyleIdentity";
 import StrategistPersonalColoring from "./pages/estrategista/PersonalColoring";
 import StrategistMorphology from "./pages/estrategista/Morphology";
 import StrategistDesignElements from "./pages/estrategista/DesignElements";
-
 import StyleAssistant from "./pages/estrategista/StyleAssistant";
 import ConsultingStructure from "./pages/estrategista/ConsultingStructure";
 import StrategistPhotos from "./pages/estrategista/Photos";
@@ -36,7 +35,6 @@ import ClientStyleIdentity from "./pages/cliente/StyleIdentity";
 import ClientPersonalColoring from "./pages/cliente/PersonalColoring";
 import ClientMorphology from "./pages/cliente/Morphology";
 import ClientDesignElements from "./pages/cliente/DesignElements";
-
 import ClientPhotos from "./pages/cliente/Photos";
 
 const queryClient = new QueryClient();
@@ -61,7 +59,6 @@ const App = () => (
               <Route path="coloracao" element={<StrategistPersonalColoring />} />
               <Route path="morfologia" element={<StrategistMorphology />} />
               <Route path="elementos" element={<StrategistDesignElements />} />
-              
               <Route path="assistente" element={<StyleAssistant />} />
               <Route path="estrutura" element={<ConsultingStructure />} />
               <Route path="fotos" element={<StrategistPhotos />} />
@@ -76,7 +73,6 @@ const App = () => (
               <Route path="coloracao" element={<ClientPersonalColoring />} />
               <Route path="morfologia" element={<ClientMorphology />} />
               <Route path="elementos" element={<ClientDesignElements />} />
-              
               <Route path="fotos" element={<ClientPhotos />} />
               <Route path="assistente" element={<ClientAssistant />} />
             </Route>
