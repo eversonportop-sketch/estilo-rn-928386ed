@@ -4,8 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Palette, Save, Check, Loader2 } from "lucide-react";
+import { User, Palette, Save, Check, Loader2, Pencil, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useClients } from "@/hooks/useClients";
@@ -26,84 +27,75 @@ type PaletteOption = {
   colors: string[];
 };
 
+type PaletteDraft = {
+  name: string;
+  description: string;
+  colors: string[];
+};
+
 function normalizePaletteColors(value: unknown): string[] {
-  if (Array.isArray(value)) {
-    return value
-      .filter((color): color is string => typeof color === "string" && color.trim().length > 0)
-      .slice(0, 5);
-  }
+  if (!Array.isArray(value)) return [];
 
-  if (typeof value === "string") {
-    const trimmed = value.trim();
-
-    if (!trimmed) return [];
-
-    try {
-      const parsed = JSON.parse(trimmed);
-      if (Array.isArray(parsed)) {
-        return parsed
-          .filter((color): color is string => typeof color === "string" && color.trim().length > 0)
-          .slice(0, 5);
+  return value
+    .map((item) => {
+      if (typeof item === "string") return item.trim();
+      if (item && typeof item === "object") {
+        const record = item as Record<string, unknown>;
+        const candidate = [record.hex, record.color_hex, record.color, record.value].find(
+          (entry): entry is string => typeof entry === "string" && entry.trim().length > 0,
+        );
+        return candidate?.trim() ?? "";
       }
-    } catch {
-      // ignore invalid JSON and try comma-separated parsing below
-    }
-
-    return trimmed
-      .split(",")
-      .map((color) => color.trim())
-      .filter(Boolean)
-      .slice(0, 5);
-  }
-
-  return [];
+      return "";
+    })
+    .filter(Boolean)
+    .slice(0, 5);
 }
 
 function normalizePalette(row: Record<string, unknown>): PaletteOption | null {
   const id = typeof row.id === "string" ? row.id : null;
-
   if (!id) return null;
-
-  const nameCandidates = [row.name, row.season_name, row.title];
-  const name =
-    nameCandidates.find((value): value is string => typeof value === "string" && value.trim().length > 0) ??
-    "Paleta sem nome";
-
-  const description = typeof row.description === "string" ? row.description : "";
-  const colors = normalizePaletteColors(row.colors ?? row.palette_colors ?? row.hex_colors ?? row.hex_codes);
 
   return {
     id,
     slug: typeof row.slug === "string" ? row.slug : null,
-    name,
-    description,
-    colors,
+    name: typeof row.name === "string" && row.name.trim() ? row.name : "Paleta sem nome",
+    description: typeof row.description === "string" ? row.description : "",
+    colors: normalizePaletteColors(row.color_palette_colors),
+  };
+}
+
+function isValidHexColor(value: string) {
+  return /^#([0-9A-Fa-f]{6})$/.test(value.trim());
+}
+
+function buildPaletteDraft(palette: PaletteOption): PaletteDraft {
+  return {
+    name: palette.name,
+    description: palette.description,
+    colors: [...palette.colors, ...Array.from({ length: Math.max(0, 5 - palette.colors.length) }, () => "")].slice(0, 5),
   };
 }
 
 async function fetchPaletteOptions(): Promise<PaletteOption[]> {
-  const paletteTables = ["color_seasons", "color_palettes"];
-  let lastError: Error | null = null;
+  const { data, error } = await supabase
+    .from("color_palettes")
+    .select(
+      `
+        id,
+        slug,
+        name,
+        description,
+        color_palette_colors ( hex )
+      `,
+    )
+    .order("name");
 
-  for (const tableName of paletteTables) {
-    const { data, error } = await supabase.from(tableName).select("*");
+  if (error) throw error;
 
-    if (error) {
-      lastError = error;
-      continue;
-    }
-
-    const palettes = (data ?? [])
-      .map((row) => normalizePalette(row as Record<string, unknown>))
-      .filter((palette): palette is PaletteOption => Boolean(palette));
-
-    if (palettes.length > 0) {
-      return palettes;
-    }
-  }
-
-  if (lastError) throw lastError;
-  return [];
+  return (data ?? [])
+    .map((row) => normalizePalette(row as Record<string, unknown>))
+    .filter((palette): palette is PaletteOption => Boolean(palette));
 }
 
 function usePaletteOptions() {
@@ -135,6 +127,9 @@ export default function PersonalColoring() {
   const [selectedPalette, setSelectedPalette] = useState("");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [editingPaletteId, setEditingPaletteId] = useState<string | null>(null);
+  const [paletteDraft, setPaletteDraft] = useState<PaletteDraft>({ name: "", description: "", colors: ["", "", "", "", ""] });
+  const [savingPaletteId, setSavingPaletteId] = useState<string | null>(null);
 
   const { data: clients, isLoading: loadingClients } = useClients();
   const { data: existing } = useClientColorPalette(selectedClient || undefined);
@@ -150,6 +145,67 @@ export default function PersonalColoring() {
       setNotes("");
     }
   }, [existing]);
+
+  const startEditingPalette = (palette: PaletteOption) => {
+    setEditingPaletteId(palette.id);
+    setPaletteDraft(buildPaletteDraft(palette));
+  };
+
+  const stopEditingPalette = () => {
+    setEditingPaletteId(null);
+    setPaletteDraft({ name: "", description: "", colors: ["", "", "", "", ""] });
+  };
+
+  const updateDraftColor = (index: number, value: string) => {
+    setPaletteDraft((current) => {
+      const nextColors = [...current.colors];
+      nextColors[index] = value;
+      return { ...current, colors: nextColors };
+    });
+  };
+
+  const handlePaletteDefinitionSave = async (paletteId: string) => {
+    const normalizedName = paletteDraft.name.trim();
+    const normalizedDescription = paletteDraft.description.trim();
+    const validColors = paletteDraft.colors.map((color) => color.trim()).filter((color) => isValidHexColor(color));
+
+    if (!normalizedName) {
+      toast.error("Informe o nome da paleta.");
+      return;
+    }
+
+    if (validColors.length === 0) {
+      toast.error("Informe pelo menos uma cor válida no formato #RRGGBB.");
+      return;
+    }
+
+    setSavingPaletteId(paletteId);
+    try {
+      const { error: paletteError } = await supabase
+        .from("color_palettes")
+        .update({ name: normalizedName, description: normalizedDescription || null })
+        .eq("id", paletteId);
+
+      if (paletteError) throw paletteError;
+
+      const { error: deleteError } = await supabase.from("color_palette_colors").delete().eq("palette_id", paletteId);
+      if (deleteError) throw deleteError;
+
+      const { error: insertError } = await supabase.from("color_palette_colors").insert(
+        validColors.map((hex) => ({ palette_id: paletteId, hex })),
+      );
+
+      if (insertError) throw insertError;
+
+      await qc.invalidateQueries({ queryKey: ["color-palette-options"] });
+      toast.success("Paleta atualizada com sucesso!");
+      stopEditingPalette();
+    } catch (error: any) {
+      toast.error("Erro: " + error.message);
+    } finally {
+      setSavingPaletteId(null);
+    }
+  };
 
   const handleSave = async () => {
     if (!selectedClient) {
@@ -259,44 +315,136 @@ export default function PersonalColoring() {
                 </p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {paletteOptions.map((palette) => (
-                    <button
-                      key={palette.id}
-                      onClick={() => setSelectedPalette(palette.id)}
-                      className={cn(
-                        "p-4 rounded-xl border-2 transition-all duration-200 text-left",
-                        selectedPalette === palette.id
-                          ? "border-primary bg-primary/10"
-                          : "border-border hover:border-primary/50"
-                      )}
-                    >
-                      <div className="flex items-center justify-between mb-3 gap-3">
-                        <div>
-                          <span className="font-medium block">{palette.name}</span>
-                          {palette.slug && (
-                            <span className="text-xs text-muted-foreground">{palette.slug}</span>
-                          )}
+                  {paletteOptions.map((palette) => {
+                    const isEditing = editingPaletteId === palette.id;
+                    const isSavingDefinition = savingPaletteId === palette.id;
+
+                    return (
+                      <div
+                        key={palette.id}
+                        onClick={() => !isEditing && setSelectedPalette(palette.id)}
+                        className={cn(
+                          "p-4 rounded-xl border-2 transition-all duration-200",
+                          isEditing ? "border-primary bg-primary/5" : "cursor-pointer",
+                          selectedPalette === palette.id && !isEditing
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/50",
+                        )}
+                      >
+                        <div className="flex items-start justify-between mb-3 gap-3">
+                          <div>
+                            <span className="font-medium block">{palette.name}</span>
+                            {palette.slug && (
+                              <span className="text-xs text-muted-foreground">{palette.slug}</span>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-1 shrink-0">
+                            {!isEditing && selectedPalette === palette.id && (
+                              <Check className="w-5 h-5 text-primary" />
+                            )}
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                isEditing ? stopEditingPalette() : startEditingPalette(palette);
+                              }}
+                            >
+                              {isEditing ? <X className="w-4 h-4" /> : <Pencil className="w-4 h-4" />}
+                            </Button>
+                          </div>
                         </div>
-                        {selectedPalette === palette.id && (
-                          <Check className="w-5 h-5 text-primary shrink-0" />
+
+                        {isEditing ? (
+                          <div className="space-y-4" onClick={(event) => event.stopPropagation()}>
+                            <div className="space-y-2">
+                              <Label htmlFor={`palette-name-${palette.id}`}>Nome</Label>
+                              <Input
+                                id={`palette-name-${palette.id}`}
+                                value={paletteDraft.name}
+                                onChange={(event) => setPaletteDraft((current) => ({ ...current, name: event.target.value }))}
+                                placeholder="Nome da paleta"
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor={`palette-description-${palette.id}`}>Descrição</Label>
+                              <Textarea
+                                id={`palette-description-${palette.id}`}
+                                value={paletteDraft.description}
+                                onChange={(event) =>
+                                  setPaletteDraft((current) => ({ ...current, description: event.target.value }))
+                                }
+                                rows={3}
+                                placeholder="Descreva a paleta"
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label>Cores (até 5)</Label>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {paletteDraft.colors.map((color, index) => {
+                                  const validHex = isValidHexColor(color);
+
+                                  return (
+                                    <div key={`${palette.id}-color-${index}`} className="flex items-center gap-3 rounded-lg border border-border p-3">
+                                      <div
+                                        className="h-10 w-10 rounded-md border border-border shrink-0"
+                                        style={{ backgroundColor: validHex ? color.trim() : "hsl(var(--muted))" }}
+                                      />
+                                      <Input
+                                        value={color}
+                                        onChange={(event) => updateDraftColor(index, event.target.value.toUpperCase())}
+                                        placeholder="#FF5733"
+                                      />
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+
+                            <div className="flex flex-wrap gap-2 pt-1">
+                              <Button
+                                type="button"
+                                onClick={() => handlePaletteDefinitionSave(palette.id)}
+                                disabled={isSavingDefinition}
+                              >
+                                {isSavingDefinition ? (
+                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                ) : (
+                                  <Save className="w-4 h-4 mr-2" />
+                                )}
+                                Salvar card
+                              </Button>
+                              <Button type="button" variant="outline" onClick={stopEditingPalette}>
+                                Cancelar
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            {palette.colors.length > 0 && (
+                              <div className="flex gap-1 mb-2">
+                                {palette.colors.map((color, idx) => (
+                                  <div
+                                    key={`${palette.id}-${idx}`}
+                                    className="w-8 h-8 rounded-md shadow-sm"
+                                    style={{ backgroundColor: color }}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                            <p className="text-xs text-muted-foreground">
+                              {palette.description || "Sem descrição cadastrada."}
+                            </p>
+                          </>
                         )}
                       </div>
-                      {palette.colors.length > 0 && (
-                        <div className="flex gap-1 mb-2">
-                          {palette.colors.map((color, idx) => (
-                            <div
-                              key={`${palette.id}-${idx}`}
-                              className="w-8 h-8 rounded-md shadow-sm"
-                              style={{ backgroundColor: color }}
-                            />
-                          ))}
-                        </div>
-                      )}
-                      <p className="text-xs text-muted-foreground">
-                        {palette.description || "Sem descrição cadastrada."}
-                      </p>
-                    </button>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </CardContent>
